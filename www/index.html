@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MeterVPN - VPN by the minute</title>
+    <script
+            src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
+    <script>
+        $(document).ready(() => {
+            $("#submit").click(() => {
+                const pubkey = $("#pubkey").val()
+                const ipaddr = $("#ipaddr").val()
+                const duration = $("#duration").val()
+                console.log(JSON.stringify({pubkey, ipaddr, duration}))
+            })
+            console.log("LOADED")
+        })
+    </script>
+</head>
+<body>
+<style>
+    body {
+        font-family: "Helvetica Neue", sans-serif;
+    }
+
+    label {
+        margin-right: 20px;
+    }
+</style>
+<h1>
+    MeterVPN - VPN by the minute
+</h1>
+<hr>
+<p>
+    <label for="pubkey">Pubkey</label>
+    <input type="text" id="pubkey">
+</p>
+<p>
+    <label for="ipaddr">IP Address</label>
+    <input type="text" id="ipaddr">
+</p>
+<p>
+    <label for="duration">Duration (min) </label>
+    <input type="number" id="duration">
+</p>
+<button id="submit">Submit</button>
+</body>
+</html>
