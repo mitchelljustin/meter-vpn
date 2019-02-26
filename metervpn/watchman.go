@@ -94,12 +94,15 @@ func (w *Watchman) Tick() {
 
 func (w *Watchman) ConnectPeer(pubkey PublicKey, peers []wgtypes.Peer) error {
 	w.Report("Connecting peer: %v", MarshalPublicKey(pubkey))
-	// TODO: store IP somewhere
-	ipNet := net.IPNet{
-		IP:   []byte{10, 10, 10, 230},
-		Mask: []byte{255, 255, 255, 255},
+	ip, err := w.Store.GetIPAddress(pubkey)
+	if err != nil {
+		return err
 	}
-	err := w.wireguard.ConfigureDevice(WireguardDeviceName, wgtypes.Config{
+	ipNet := net.IPNet{
+		IP:   *ip,
+		Mask: net.CIDRMask(32, 32),
+	}
+	return w.wireguard.ConfigureDevice(WireguardDeviceName, wgtypes.Config{
 		Peers: []wgtypes.PeerConfig{
 			{
 				PublicKey:  pubkey,
@@ -107,7 +110,6 @@ func (w *Watchman) ConnectPeer(pubkey PublicKey, peers []wgtypes.Peer) error {
 			},
 		},
 	})
-	return err
 }
 
 func (w *Watchman) DisconnectPeer(pubkey PublicKey) error {

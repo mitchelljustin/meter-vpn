@@ -47,7 +47,7 @@ func (tb *TollBooth) HandleExtensionRequest(ctx *gin.Context) {
 		return
 	}
 	// TODO: generate lightning invoice
-	expiry, err := tb.Store.AddDuration(*pubkey, duration)
+	expiry, err := tb.Store.AddAllowance(*pubkey, duration)
 	if err != nil {
 		respondServerError(ctx, err)
 		return
