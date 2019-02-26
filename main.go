@@ -1,7 +1,7 @@
 package main
 
 import (
-	"MeterVPN/lib"
+	"MeterVPN/metervpn"
 	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -14,7 +14,7 @@ import (
 func main() {
 	port := flag.Int("p", 8080, "port")
 	dbPath := flag.String("d", "data/meter.db", "database path")
-	watchInterval := flag.Uint("i", 15, "watch interval in seconds")
+	watchInterval := flag.Uint("i", 5, "watch interval in seconds")
 	flag.Parse()
 
 	db, err := leveldb.OpenFile(*dbPath, nil)
@@ -23,17 +23,17 @@ func main() {
 		os.Exit(1)
 	}
 	defer db.Close()
-	store := lib.LevelDBExpiryStore{DB: db}
+	store := metervpn.LevelDBAllowanceStore{DB: db}
 
-	booth := lib.TollBooth{Store: &store}
+	booth := metervpn.TollBooth{Store: &store}
 
 	interval := time.Duration(*watchInterval) * time.Second
-	go lib.RunWatchman(interval, &store)
+	go metervpn.RunWatchman(interval, &store)
 
 	startGinServer(&booth, *port)
 }
 
-func startGinServer(booth *lib.TollBooth, port int) {
+func startGinServer(booth *metervpn.TollBooth, port int) {
 	router := gin.Default()
 
 	router.POST("/api/extend", booth.HandleExtensionRequest)

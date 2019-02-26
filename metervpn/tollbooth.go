@@ -1,8 +1,6 @@
-package lib
+package metervpn
 
 import (
-	"encoding/base64"
-	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -12,7 +10,7 @@ import (
 const TimeFormat = time.RFC1123
 
 type TollBooth struct {
-	Store ExpiryStore
+	Store AllowanceStore
 }
 
 type Extension struct {
@@ -32,26 +30,13 @@ func respondServerError(ctx *gin.Context, err error) {
 	ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 }
 
-func extractPubkey(base64Pubkey string) (*PublicKey, error) {
-	pubkeyBytes, err := base64.StdEncoding.DecodeString(base64Pubkey)
-	if err != nil {
-		return nil, err
-	}
-	if len(pubkeyBytes) != 32 {
-		return nil, errors.New("public key must be 32 bytes")
-	}
-	var pubkey PublicKey
-	copy(pubkey[:PublicKeySize], pubkeyBytes)
-	return &pubkey, nil
-}
-
 func (tb *TollBooth) HandleExtensionRequest(ctx *gin.Context) {
 	var extension Extension
 	if err := ctx.BindJSON(&extension); err != nil {
 		respondBadRequest(ctx, err)
 		return
 	}
-	pubkey, err := extractPubkey(extension.Pubkey)
+	pubkey, err := UnmarshalPublicKey(extension.Pubkey)
 	if err != nil {
 		respondBadRequest(ctx, err)
 		return
@@ -76,7 +61,7 @@ func (tb *TollBooth) HandleGetExpiryRequest(ctx *gin.Context) {
 		respondBadRequest(ctx, err)
 		return
 	}
-	pubkey, err := extractPubkey(getExpiry.Pubkey)
+	pubkey, err := UnmarshalPublicKey(getExpiry.Pubkey)
 	if err != nil {
 		respondBadRequest(ctx, err)
 		return
