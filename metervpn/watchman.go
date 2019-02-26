@@ -3,14 +3,18 @@ package metervpn
 import (
 	"fmt"
 	"github.com/mdlayher/wireguardctrl"
+	"github.com/mdlayher/wireguardctrl/wgtypes"
 	"log"
+	"net"
 	"time"
 )
+
+const WireguardDeviceName = "wg0"
 
 type Watchman struct {
 	Store AllowanceStore
 
-	wgClient *wireguardctrl.Client
+	wireguard *wireguardctrl.Client
 }
 
 func (w *Watchman) Report(format string, v ...interface{}) {
@@ -23,7 +27,7 @@ func RunWatchman(interval time.Duration, store AllowanceStore) {
 		Store: store,
 	}
 	watchman.ConnectToWireGuard()
-	defer watchman.wgClient.Close()
+	defer watchman.wireguard.Close()
 
 	ticker := time.NewTicker(interval)
 	for {
@@ -40,13 +44,13 @@ func (w *Watchman) ConnectToWireGuard() {
 		return
 	}
 
-	w.wgClient = client
+	w.wireguard = client
 }
 
 func (w *Watchman) Tick() {
 	now := time.Now()
 	w.Report("Checking at %v", now)
-	device, err := w.wgClient.Device("wg0")
+	device, err := w.wireguard.Device(WireguardDeviceName)
 	if err != nil {
 		w.Report("Error getting WireGuard device: %v", err)
 	}
@@ -79,7 +83,7 @@ func (w *Watchman) Tick() {
 				}
 			}
 			if !found {
-				err := w.ConnectPeer(pubkey)
+				err := w.ConnectPeer(pubkey, device.Peers)
 				if err != nil {
 					w.Report("ERROR: Could not connect peer, %v", err)
 				}
@@ -88,18 +92,36 @@ func (w *Watchman) Tick() {
 	}
 }
 
-func (w *Watchman) ConnectPeer(pubkey PublicKey) error {
+func (w *Watchman) ConnectPeer(pubkey PublicKey, peers []wgtypes.Peer) error {
 	w.Report("Connecting peer: %v", MarshalPublicKey(pubkey))
-	// TODO: connect peer to wireguard
-	return nil
+	// TODO: store IP somewhere
+	ipNet := net.IPNet{
+		IP:   []byte{10, 10, 10, 230},
+		Mask: []byte{255, 255, 255, 255},
+	}
+	err := w.wireguard.ConfigureDevice(WireguardDeviceName, wgtypes.Config{
+		Peers: []wgtypes.PeerConfig{
+			{
+				PublicKey:  pubkey,
+				AllowedIPs: []net.IPNet{ipNet},
+			},
+		},
+	})
+	return err
 }
 
 func (w *Watchman) DisconnectPeer(pubkey PublicKey) error {
 	w.Report("Disconnecting peer: %v", MarshalPublicKey(pubkey))
-	err := w.Store.DeletePubkey(pubkey)
-	if err != nil {
-		return err
+	err := w.wireguard.ConfigureDevice(WireguardDeviceName, wgtypes.Config{
+		Peers: []wgtypes.PeerConfig{
+			{
+				PublicKey: pubkey,
+				Remove:    true,
+			},
+		},
+	})
+	if err == nil {
+		err = w.Store.DeletePubkey(pubkey)
 	}
-	// TODO: disconnect peer from wireguard
-	return nil
+	return err
 }

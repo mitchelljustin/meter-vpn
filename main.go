@@ -14,7 +14,7 @@ import (
 func main() {
 	port := flag.Int("p", 8080, "port")
 	dbPath := flag.String("d", "data/meter.db", "database path")
-	watchInterval := flag.Uint("i", 5, "watch interval in seconds")
+	watchInterval := flag.Uint("i", 15, "watch interval in seconds")
 	flag.Parse()
 
 	db, err := leveldb.OpenFile(*dbPath, nil)
