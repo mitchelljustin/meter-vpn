@@ -2,21 +2,6 @@
 
 
 [[projects]]
-  digest = "1:767d911bba094208ba858a06dcdaa3decf3edb28359ea7f7cf4d924a8e1c1fe5"
-  name = "git.zx2c4.com/wireguard-go"
-  packages = [
-    ".",
-    "ratelimiter",
-    "replay",
-    "rwcancel",
-    "tai64n",
-    "tun",
-  ]
-  pruneopts = "UT"
-  revision = "8fde8334dcf3a7f3934159f45b6fc1d5f4be8a90"
-  version = "0.0.20181222"
-
-[[projects]]
   branch = "master"
   digest = "1:38f00d85208f9f51e51063b0b90687d72f3ad61a7b6135d3ab6cb21e7b68dff2"
   name = "github.com/gin-contrib/sse"
@@ -70,6 +55,39 @@
   version = "v0.0.5"
 
 [[projects]]
+  branch = "master"
+  digest = "1:d6664486d8cf8f3053e34f388a5a17b5ca210ed2e25eb3a0d59cc3a95c31abb8"
+  name = "github.com/mdlayher/genetlink"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "e97704c1b7955246e3c4f6d9746a7b45ff3c5a26"
+
+[[projects]]
+  branch = "master"
+  digest = "1:69e975dfe0a20dc9dd18be61ca9b99bba9a87cbf8e07293806b457ba237c1a85"
+  name = "github.com/mdlayher/netlink"
+  packages = [
+    ".",
+    "nlenc",
+  ]
+  pruneopts = "UT"
+  revision = "fd3a33609cb6e62950a00ab0b3d2f4aad7d3f320"
+
+[[projects]]
+  branch = "master"
+  digest = "1:4ca0349213af28faafeb7720f9569123086292bfcca4dddaec6c4320d2d08421"
+  name = "github.com/mdlayher/wireguardctrl"
+  packages = [
+    ".",
+    "internal/wgnl",
+    "internal/wgnl/internal/wgh",
+    "internal/wguser",
+    "wgtypes",
+  ]
+  pruneopts = "UT"
+  revision = "d4e67a7c0344227eb18ecb14c8fe4d1b05f18d89"
+
+[[projects]]
   digest = "1:33422d238f147d247752996a26574ac48dcf472976eda7f5134015f06bf16563"
   name = "github.com/modern-go/concurrent"
   packages = ["."]
@@ -116,41 +134,25 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:6757a394f58a99552de40b548dd3b83ce1054c32c9339ba772b2b6afb0ce1d42"
+  digest = "1:49c0accb0c0098733a4033474f7df0b9db8c688a977840ccae378632237a315e"
   name = "golang.org/x/crypto"
-  packages = [
-    "blake2s",
-    "chacha20poly1305",
-    "curve25519",
-    "internal/chacha20",
-    "internal/subtle",
-    "poly1305",
-  ]
+  packages = ["curve25519"]
   pruneopts = "UT"
-  revision = "ffb98f73852f696ea2bb21a617a5c4b3e067a439"
+  revision = "7f87c0fbb88b590338857bcb720678c2583d4dea"
 
 [[projects]]
   branch = "master"
-  digest = "1:19beed19e4246df7aff387a2bcd4519a386e3fe9637690031c4d4b0cf75f7215"
+  digest = "1:b45576bdf553b4c64ff798345b3256e49a157f8b480d29c8c0a89f09119d6c5a"
   name = "golang.org/x/net"
-  packages = [
-    "bpf",
-    "internal/iana",
-    "internal/socket",
-    "ipv4",
-    "ipv6",
-  ]
+  packages = ["bpf"]
   pruneopts = "UT"
-  revision = "3a22650c66bd7f4fb6d1e8072ffd7b75c8a27898"
+  revision = "66a96c8a540e84140eaf74e38bb3a0a2ff5e5c53"
 
 [[projects]]
   branch = "master"
-  digest = "1:ad5e62a015226e008f9ca24cdf00d65c74f004f1b247cfa033ca9e3afcf41b29"
+  digest = "1:d0e9a312c4610a508569ab25e54d34600b1a96d19b1866ece104ffdf1c1b9d2c"
   name = "golang.org/x/sys"
-  packages = [
-    "cpu",
-    "unix",
-  ]
+  packages = ["unix"]
   pruneopts = "UT"
   revision = "cd391775e71e684db52b63df9affd58269495083"
 
@@ -174,8 +176,8 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "git.zx2c4.com/wireguard-go",
     "github.com/gin-gonic/gin",
+    "github.com/mdlayher/wireguardctrl",
     "github.com/syndtr/goleveldb/leveldb",
   ]
   solver-name = "gps-cdcl"

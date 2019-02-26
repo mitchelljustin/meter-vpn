@@ -8,22 +8,27 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 	"log"
 	"os"
+	"time"
 )
 
 func main() {
-	port := flag.Int("p", 8000, "port")
+	port := flag.Int("p", 8080, "port")
 	dbPath := flag.String("d", "data/meter.db", "database path")
+	watchInterval := flag.Uint("i", 15, "watch interval in seconds")
 	flag.Parse()
 
 	db, err := leveldb.OpenFile(*dbPath, nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("DB Error: %v", err)
 		os.Exit(1)
 	}
 	defer db.Close()
-
 	store := lib.LevelDBExpiryStore{DB: db}
+
 	booth := lib.TollBooth{Store: &store}
+
+	interval := time.Duration(*watchInterval) * time.Second
+	go lib.RunWatchman(interval, &store)
 
 	startGinServer(&booth, *port)
 }
