@@ -12,7 +12,7 @@ import (
 const WireguardDeviceName = "wg0"
 
 type Watchman struct {
-	Store AllowanceStore
+	Store PeerStore
 
 	wireguard *wireguardctrl.Client
 }
@@ -21,7 +21,7 @@ func (w *Watchman) Report(format string, v ...interface{}) {
 	log.Printf("[WATCHMAN] %v", fmt.Sprintf(format, v...))
 }
 
-func RunWatchman(interval time.Duration, store AllowanceStore) {
+func RunWatchman(interval time.Duration, store PeerStore) {
 	log.Printf("Running Watchman at interval: %v", interval)
 	watchman := Watchman{
 		Store: store,
@@ -49,7 +49,7 @@ func (w *Watchman) ConnectToWireGuard() {
 
 func (w *Watchman) Tick() {
 	now := time.Now()
-	w.Report("Checking at %v", now)
+	w.Report("TICK %v", now)
 	device, err := w.wireguard.Device(WireguardDeviceName)
 	if err != nil {
 		w.Report("Error getting WireGuard device: %v", err)
@@ -123,7 +123,7 @@ func (w *Watchman) DisconnectPeer(pubkey PublicKey) error {
 		},
 	})
 	if err == nil {
-		err = w.Store.DeletePubkey(pubkey)
+		err = w.Store.DeletePeer(pubkey)
 	}
 	return err
 }

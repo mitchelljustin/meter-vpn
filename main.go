@@ -23,7 +23,7 @@ func main() {
 		os.Exit(1)
 	}
 	defer db.Close()
-	store := metervpn.LevelDBAllowanceStore{DB: db}
+	store := metervpn.LevelDBPeerStore{DB: db}
 
 	booth := metervpn.TollBooth{Store: &store}
 
@@ -37,7 +37,7 @@ func startGinServer(booth *metervpn.TollBooth, port int) {
 	router := gin.Default()
 
 	router.POST("/api/extend", booth.HandleExtensionRequest)
-	router.GET("/api/expiry", booth.HandleGetExpiryRequest)
+	router.GET("/api/peer", booth.HandleGetPeerRequest)
 
 	router.Static("/app", "./www")
 

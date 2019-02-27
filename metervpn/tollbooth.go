@@ -10,7 +10,7 @@ import (
 const TimeFormat = time.RFC1123
 
 type TollBooth struct {
-	Store AllowanceStore
+	Store PeerStore
 }
 
 type Extension struct {
@@ -18,7 +18,7 @@ type Extension struct {
 	Duration string `json:"duration"`
 }
 
-type GetExpiry struct {
+type GetPeer struct {
 	Pubkey string `json:"pubkey"`
 }
 
@@ -55,13 +55,13 @@ func (tb *TollBooth) HandleExtensionRequest(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"newExpiry": expiry.Format(TimeFormat)})
 }
 
-func (tb *TollBooth) HandleGetExpiryRequest(ctx *gin.Context) {
-	var getExpiry GetExpiry
-	if err := ctx.BindJSON(&getExpiry); err != nil {
+func (tb *TollBooth) HandleGetPeerRequest(ctx *gin.Context) {
+	var getPeer GetPeer
+	if err := ctx.BindJSON(&getPeer); err != nil {
 		respondBadRequest(ctx, err)
 		return
 	}
-	pubkey, err := UnmarshalPublicKey(getExpiry.Pubkey)
+	pubkey, err := UnmarshalPublicKey(getPeer.Pubkey)
 	if err != nil {
 		respondBadRequest(ctx, err)
 		return
@@ -71,5 +71,13 @@ func (tb *TollBooth) HandleGetExpiryRequest(ctx *gin.Context) {
 		respondServerError(ctx, err)
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"expiry": expiry.Format(TimeFormat)})
+	ip, err := tb.Store.GetIPAddress(*pubkey)
+	if err != nil {
+		respondServerError(ctx, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"expiry": expiry.Format(TimeFormat),
+		"ip":     ip.String(),
+	})
 }

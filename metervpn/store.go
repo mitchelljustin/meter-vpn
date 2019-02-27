@@ -1,6 +1,7 @@
 package metervpn
 
 import (
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"github.com/syndtr/goleveldb/leveldb"
@@ -9,13 +10,13 @@ import (
 	"time"
 )
 
-type AllowanceStore interface {
+type PeerStore interface {
 	AddAllowance(pubkey PublicKey, duration time.Duration) (*time.Time, error)
 	GetExpiry(pubkey PublicKey) (*time.Time, error)
 	GetIPAddress(pubkey PublicKey) (*net.IP, error)
 
 	GetAllPubkeys() ([]PublicKey, error)
-	DeletePubkey(pubkey PublicKey) error
+	DeletePeer(pubkey PublicKey) error
 }
 
 type LevelDBPeerRecord struct {
@@ -23,7 +24,7 @@ type LevelDBPeerRecord struct {
 	IP     string `json:"ip"`
 }
 
-type LevelDBAllowanceStore struct {
+type LevelDBPeerStore struct {
 	DB *leveldb.DB
 }
 
@@ -37,15 +38,15 @@ func keyForPubkey(pubkey PublicKey) []byte {
 	)
 }
 
-func (s *LevelDBAllowanceStore) saveRecord(pubkey PublicKey, record LevelDBPeerRecord) error {
-	obj, err := json.Marshal(record)
+func (s *LevelDBPeerStore) savePeer(pubkey PublicKey, peer *LevelDBPeerRecord) error {
+	obj, err := json.Marshal(peer)
 	if err != nil {
 		return err
 	}
 	return s.DB.Put(keyForPubkey(pubkey), obj, nil)
 }
 
-func (s *LevelDBAllowanceStore) loadOrCreateRecord(pubkey PublicKey) (*LevelDBPeerRecord, error) {
+func (s *LevelDBPeerStore) getOrCreatePeer(pubkey PublicKey) (*LevelDBPeerRecord, error) {
 	dbKey := keyForPubkey(pubkey)
 	bytes, err := s.DB.Get(dbKey, nil)
 	if err == leveldb.ErrNotFound {
@@ -61,38 +62,46 @@ func (s *LevelDBAllowanceStore) loadOrCreateRecord(pubkey PublicKey) (*LevelDBPe
 	return &record, nil
 }
 
-func (s *LevelDBAllowanceStore) AddAllowance(pubkey PublicKey, duration time.Duration) (*time.Time, error) {
+func (s *LevelDBPeerStore) AddAllowance(pubkey PublicKey, duration time.Duration) (*time.Time, error) {
 	expiry, err := s.GetExpiry(pubkey)
 	if err != nil {
 		return nil, err
 	}
 	newExpiry := expiry.Add(duration)
-	if err := s.DB.Put(keyForPubkey(pubkey), []byte(newExpiry.Format(TimeLayout)), nil); err != nil {
+	peer, err := s.getOrCreatePeer(pubkey)
+	if err != nil {
+		return nil, err
+	}
+	peer.Expiry = newExpiry.Format(TimeLayout)
+	if err := s.savePeer(pubkey, peer); err != nil {
 		return nil, err
 	}
 	return &newExpiry, nil
 }
 
-func (s *LevelDBAllowanceStore) GetExpiry(pubkey PublicKey) (*time.Time, error) {
-	record, err := s.loadOrCreateRecord(pubkey)
-	if record.Expiry == "" {
+func (s *LevelDBPeerStore) GetExpiry(pubkey PublicKey) (*time.Time, error) {
+	peer, err := s.getOrCreatePeer(pubkey)
+	if err != nil {
+		return nil, err
+	}
+	if peer.Expiry == "" {
 		now := time.Now()
 		return &now, nil
 	} else if err != nil {
 		return nil, err
 	}
-	expiry, err := time.Parse(TimeLayout, record.Expiry)
+	expiry, err := time.Parse(TimeLayout, peer.Expiry)
 	if err != nil {
 		return nil, err
 	}
 	return &expiry, nil
 }
 
-func (s *LevelDBAllowanceStore) DeletePubkey(pubkey PublicKey) error {
+func (s *LevelDBPeerStore) DeletePeer(pubkey PublicKey) error {
 	return s.DB.Delete(keyForPubkey(pubkey), nil)
 }
 
-func (s *LevelDBAllowanceStore) GetAllPubkeys() ([]PublicKey, error) {
+func (s *LevelDBPeerStore) GetAllPubkeys() ([]PublicKey, error) {
 	iter := s.DB.NewIterator(util.BytesPrefix([]byte("pubkey:")), nil)
 	var pubkeys []PublicKey = nil
 	for iter.Next() {
@@ -106,13 +115,33 @@ func (s *LevelDBAllowanceStore) GetAllPubkeys() ([]PublicKey, error) {
 	return pubkeys, nil
 }
 
-func (s *LevelDBAllowanceStore) GetIPAddress(pubkey PublicKey) (*net.IP, error) {
-	highestIP, err := s.DB.Get([]byte(HighestIPKey), nil)
-	if err == leveldb.ErrNotFound {
-		highestIP = net.IPv4(10, 0, 0, 1)
-	} else if err != nil {
+func (s *LevelDBPeerStore) GetIPAddress(pubkey PublicKey) (*net.IP, error) {
+	peer, err := s.getOrCreatePeer(pubkey)
+	if err != nil {
 		return nil, err
 	}
-	// TODO: cleverer way to allocate IP addresses
-
+	if peer.IP == "" {
+		highestIP, err := s.DB.Get([]byte(HighestIPKey), nil)
+		if err == leveldb.ErrNotFound {
+			highestIP = net.ParseIP("10.0.0.1")
+		} else if err != nil {
+			return nil, err
+		}
+		// TODO: cleverer way to allocate IP addresses
+		ipInt := binary.BigEndian.Uint32(highestIP[12:])
+		newPInt := ipInt + 1
+		newIPBytes := [4]byte{}
+		binary.BigEndian.PutUint32(newIPBytes[:], newPInt)
+		newIP := net.IPv4(newIPBytes[0], newIPBytes[1], newIPBytes[2], newIPBytes[3])
+		if err := s.DB.Put([]byte(HighestIPKey), newIP[:], nil); err != nil {
+			return nil, err
+		}
+		peer.IP = newIP.String()
+		if err := s.savePeer(pubkey, peer); err != nil {
+			return nil, err
+		}
+		// TODO: check 10.0.0.0 namespace overflow
+	}
+	peerIP := net.ParseIP(peer.IP)
+	return &peerIP, nil
 }
