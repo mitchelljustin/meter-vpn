@@ -61,8 +61,16 @@ func (w *Watchman) Tick() {
 		return
 	}
 	for _, pubkey := range pubkeys {
-		expiry, _ := w.Store.GetExpiry(pubkey)
 		pubkeyStr := MarshalPublicKey(pubkey)
+
+		expiry, err := w.Store.GetExpiry(pubkey)
+		if err != nil {
+			w.Report("Error getting expiry for %v, %v", pubkeyStr, err)
+			continue
+		}
+		if expiry == nil {
+			continue
+		}
 		w.Report("Checking %v (expiry %v)", pubkeyStr, *expiry)
 		if now.After(*expiry) {
 			w.Report("Peer %v is out of allowance", pubkeyStr)
@@ -123,7 +131,7 @@ func (w *Watchman) DisconnectPeer(pubkey PublicKey) error {
 		},
 	})
 	if err == nil {
-		err = w.Store.DeletePeer(pubkey)
+		err = w.Store.Expire(pubkey)
 	}
 	return err
 }

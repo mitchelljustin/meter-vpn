@@ -16,7 +16,7 @@ type PeerStore interface {
 	GetIPAddress(pubkey PublicKey) (*net.IP, error)
 
 	GetAllPubkeys() ([]PublicKey, error)
-	DeletePeer(pubkey PublicKey) error
+	Expire(pubkey PublicKey) error
 }
 
 type LevelDBPeerRecord struct {
@@ -67,6 +67,10 @@ func (s *LevelDBPeerStore) AddAllowance(pubkey PublicKey, duration time.Duration
 	if err != nil {
 		return nil, err
 	}
+	if expiry == nil {
+		now := time.Now()
+		expiry = &now
+	}
 	newExpiry := expiry.Add(duration)
 	peer, err := s.getOrCreatePeer(pubkey)
 	if err != nil {
@@ -85,8 +89,7 @@ func (s *LevelDBPeerStore) GetExpiry(pubkey PublicKey) (*time.Time, error) {
 		return nil, err
 	}
 	if peer.Expiry == "" {
-		now := time.Now()
-		return &now, nil
+		return nil, nil
 	} else if err != nil {
 		return nil, err
 	}
@@ -97,8 +100,13 @@ func (s *LevelDBPeerStore) GetExpiry(pubkey PublicKey) (*time.Time, error) {
 	return &expiry, nil
 }
 
-func (s *LevelDBPeerStore) DeletePeer(pubkey PublicKey) error {
-	return s.DB.Delete(keyForPubkey(pubkey), nil)
+func (s *LevelDBPeerStore) Expire(pubkey PublicKey) error {
+	peer, err := s.getOrCreatePeer(pubkey)
+	if err != nil {
+		return err
+	}
+	peer.Expiry = ""
+	return s.savePeer(pubkey, peer)
 }
 
 func (s *LevelDBPeerStore) GetAllPubkeys() ([]PublicKey, error) {
