@@ -25,12 +25,19 @@ func main() {
 	defer db.Close()
 	store := metervpn.LevelDBPeerStore{DB: db}
 
-	booth := metervpn.TollBooth{Store: &store}
+	booth, err := metervpn.NewTollBooth(&store, metervpn.LNDParams{
+		MacaroonPath: "secret/admin.macaroon",
+		CertPath:     "secret/tls.cert",
+		Hostname:     "159.89.121.214:10009",
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	interval := time.Duration(*watchInterval) * time.Second
 	go metervpn.RunWatchman(interval, &store)
 
-	startGinServer(&booth, *port)
+	startGinServer(booth, *port)
 }
 
 func startGinServer(booth *metervpn.TollBooth, port int) {
