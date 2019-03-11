@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/syndtr/goleveldb/leveldb"
 	"log"
-	"os"
 	"time"
 )
 
@@ -20,7 +19,6 @@ func main() {
 	db, err := leveldb.OpenFile(*dbPath, nil)
 	if err != nil {
 		log.Fatalf("DB Error: %v", err)
-		os.Exit(1)
 	}
 	defer db.Close()
 	store := metervpn.LevelDBPeerStore{DB: db}
@@ -33,9 +31,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	go booth.Run()
 
-	interval := time.Duration(*watchInterval) * time.Second
-	go metervpn.RunWatchman(interval, &store)
+	watchman := metervpn.Watchman{
+		Store:    &store,
+		Interval: time.Duration(*watchInterval) * time.Second,
+	}
+	go watchman.Run()
 
 	startGinServer(booth, *port)
 }

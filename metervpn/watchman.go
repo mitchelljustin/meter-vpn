@@ -12,7 +12,8 @@ import (
 const WireguardDeviceName = "wg0"
 
 type Watchman struct {
-	Store PeerStore
+	Store    PeerStore
+	Interval time.Duration
 
 	wireguard *wireguardctrl.Client
 }
@@ -21,17 +22,14 @@ func (w *Watchman) Report(format string, v ...interface{}) {
 	log.Printf("[WATCHMAN] %v", fmt.Sprintf(format, v...))
 }
 
-func RunWatchman(interval time.Duration, store PeerStore) {
-	log.Printf("Running Watchman at interval: %v", interval)
-	watchman := Watchman{
-		Store: store,
-	}
-	watchman.ConnectToWireGuard()
-	defer watchman.wireguard.Close()
+func (w *Watchman) Run() {
+	log.Printf("Running Watchman at interval: %v", w.Interval)
+	w.ConnectToWireGuard()
+	defer w.wireguard.Close()
 
-	ticker := time.NewTicker(interval)
+	ticker := time.NewTicker(w.Interval)
 	for {
-		watchman.Tick()
+		w.Tick()
 		<-ticker.C
 	}
 }

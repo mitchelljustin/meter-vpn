@@ -11,16 +11,20 @@ import (
 	"google.golang.org/grpc/metadata"
 	"io/ioutil"
 	"log"
+	"math"
 	"net/http"
 	"time"
 )
 
 const TimeFormat = time.RFC1123
 
+const SatsPerMin = 5.8
+
 type TollBooth struct {
-	store    PeerStore
-	lnClient lnrpc.LightningClient
-	ctx      context.Context
+	store           PeerStore
+	ctx             context.Context
+	lnClient        lnrpc.LightningClient
+	pendingInvoices map[string]pendingExtension
 }
 
 type LNDParams struct {
@@ -45,14 +49,18 @@ func NewTollBooth(store PeerStore, lndParams LNDParams) (*TollBooth, error) {
 	macaroonHex := hex.EncodeToString(macaroon)
 	ctx := context.Background()
 	ctx = metadata.AppendToOutgoingContext(ctx, "macaroon", macaroonHex)
-	lnClient := lnrpc.NewLightningClient(conn)
 	booth := TollBooth{
-		store:    store,
-		lnClient: lnClient,
-		ctx:      ctx,
+		store:           store,
+		ctx:             ctx,
+		lnClient:        lnrpc.NewLightningClient(conn),
+		pendingInvoices: make(map[string]pendingExtension),
 	}
-	booth.Test()
 	return &booth, nil
+}
+
+type pendingExtension struct {
+	Pubkey   PublicKey
+	Duration time.Duration
 }
 
 type Extension struct {
@@ -72,6 +80,36 @@ func respondServerError(ctx *gin.Context, err error) {
 	ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 }
 
+func (tb *TollBooth) Run() {
+	sub, err := tb.lnClient.SubscribeInvoices(tb.ctx, &lnrpc.InvoiceSubscription{
+		AddIndex:    0,
+		SettleIndex: 0,
+	})
+	if err != nil {
+		log.Fatalf("Could not subscribe to invoices: %v", err)
+	}
+	for {
+		invoice, err := sub.Recv()
+		if err != nil {
+			log.Printf("Error receiving invoice: %v", err)
+		}
+		if invoice.State != lnrpc.Invoice_SETTLED {
+			continue
+		}
+		payReq := invoice.PaymentRequest
+		var extension pendingExtension
+		var ok bool
+		if extension, ok = tb.pendingInvoices[payReq]; !ok {
+			continue
+		}
+		_, err = tb.store.AddAllowance(extension.Pubkey, extension.Duration)
+		if err != nil {
+			log.Printf("Error adding allowance: %v", err)
+		}
+		delete(tb.pendingInvoices, payReq)
+	}
+}
+
 func (tb *TollBooth) HandleExtensionRequest(ctx *gin.Context) {
 	var extension Extension
 	if err := ctx.BindJSON(&extension); err != nil {
@@ -88,13 +126,22 @@ func (tb *TollBooth) HandleExtensionRequest(ctx *gin.Context) {
 		respondBadRequest(ctx, err)
 		return
 	}
-	// TODO: generate lightning invoice
-	expiry, err := tb.store.AddAllowance(*pubkey, duration)
+	sats := float64(duration) / float64(time.Minute) * SatsPerMin
+	invoice := lnrpc.Invoice{
+		Value: int64(math.Ceil(sats)),
+		Memo:  fmt.Sprintf("MeterVPN: +%v", duration),
+	}
+	resp, err := tb.lnClient.AddInvoice(tb.ctx, &invoice)
 	if err != nil {
 		respondServerError(ctx, err)
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"newExpiry": expiry.Format(TimeFormat)})
+	payReq := resp.PaymentRequest
+	tb.pendingInvoices[payReq] = pendingExtension{
+		Pubkey:   *pubkey,
+		Duration: duration,
+	}
+	ctx.String(402, payReq)
 }
 
 func (tb *TollBooth) HandleGetPeerRequest(ctx *gin.Context) {
@@ -122,13 +169,4 @@ func (tb *TollBooth) HandleGetPeerRequest(ctx *gin.Context) {
 		"expiry": expiry.Format(TimeFormat),
 		"ip":     ip.String(),
 	})
-}
-
-func (tb *TollBooth) Test() {
-	resp, err := tb.lnClient.WalletBalance(tb.ctx, &lnrpc.WalletBalanceRequest{}, nil)
-	if err != nil {
-		log.Fatal(err)
-	} else {
-		log.Println(resp)
-	}
 }

@@ -25,7 +25,30 @@
 #   unused-packages = true
 
 
+[[constraint]]
+  name = "github.com/gin-gonic/gin"
+  version = "1.3.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/lightningnetwork/lnd"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/mdlayher/wireguardctrl"
+
+[[constraint]]
+  name = "github.com/syndtr/goleveldb"
+  version = "1.0.0"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/net"
+
+[[constraint]]
+  name = "google.golang.org/grpc"
+  version = "1.19.0"
+
 [prune]
   go-tests = true
   unused-packages = true
-
