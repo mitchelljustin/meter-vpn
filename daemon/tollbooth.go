@@ -141,7 +141,7 @@ func (tb *TollBooth) HandleExtensionRequest(ctx *gin.Context) {
 		Pubkey:   *pubkey,
 		Duration: duration,
 	}
-	ctx.String(402, payReq)
+	ctx.String(402, "lightning:%v", payReq)
 }
 
 func (tb *TollBooth) HandleGetPeerRequest(ctx *gin.Context) {
