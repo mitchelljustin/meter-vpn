@@ -1,4 +1,4 @@
-package metervpn
+package daemon
 
 import (
 	"encoding/binary"

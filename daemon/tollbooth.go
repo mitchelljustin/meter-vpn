@@ -1,4 +1,4 @@
-package metervpn
+package daemon
 
 import (
 	"encoding/hex"
@@ -129,7 +129,7 @@ func (tb *TollBooth) HandleExtensionRequest(ctx *gin.Context) {
 	sats := float64(duration) / float64(time.Minute) * SatsPerMin
 	invoice := lnrpc.Invoice{
 		Value: int64(math.Ceil(sats)),
-		Memo:  fmt.Sprintf("MeterVPN: +%v", duration),
+		Memo:  fmt.Sprintf("meter-vpn: +%v", duration),
 	}
 	resp, err := tb.lnClient.AddInvoice(tb.ctx, &invoice)
 	if err != nil {
@@ -158,6 +158,10 @@ func (tb *TollBooth) HandleGetPeerRequest(ctx *gin.Context) {
 	expiry, err := tb.store.GetExpiry(*pubkey)
 	if err != nil {
 		respondServerError(ctx, err)
+		return
+	}
+	if expiry == nil {
+		ctx.Status(http.StatusNotFound)
 		return
 	}
 	ip, err := tb.store.GetIPAddress(*pubkey)

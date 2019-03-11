@@ -1,10 +1,10 @@
 package main
 
 import (
-	"MeterVPN/metervpn"
 	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/mvanderh/meter-vpn/daemon"
 	"github.com/syndtr/goleveldb/leveldb"
 	"log"
 	"time"
@@ -21,9 +21,9 @@ func main() {
 		log.Fatalf("DB Error: %v", err)
 	}
 	defer db.Close()
-	store := metervpn.LevelDBPeerStore{DB: db}
+	store := daemon.LevelDBPeerStore{DB: db}
 
-	booth, err := metervpn.NewTollBooth(&store, metervpn.LNDParams{
+	booth, err := daemon.NewTollBooth(&store, daemon.LNDParams{
 		MacaroonPath: "secret/admin.macaroon",
 		CertPath:     "secret/tls.cert",
 		Hostname:     "159.89.121.214:10009",
@@ -33,7 +33,7 @@ func main() {
 	}
 	go booth.Run()
 
-	watchman := metervpn.Watchman{
+	watchman := daemon.Watchman{
 		Store:    &store,
 		Interval: time.Duration(*watchInterval) * time.Second,
 	}
@@ -42,7 +42,7 @@ func main() {
 	startGinServer(booth, *port)
 }
 
-func startGinServer(booth *metervpn.TollBooth, port int) {
+func startGinServer(booth *daemon.TollBooth, port int) {
 	router := gin.Default()
 
 	router.POST("/api/extend", booth.HandleExtensionRequest)
