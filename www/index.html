@@ -7,19 +7,9 @@
             src="https://code.jquery.com/jquery-3.3.1.min.js"
             integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
             crossorigin="anonymous"></script>
-    <script>
-        const satsPerMin = 5.7
-
-        $(document).ready(() => {
-            const updateCost = (duration) => {
-                const sats = Math.round(parseInt(duration) * satsPerMin)
-                $("#cost").text(`${sats} satoshi`)
-            };
-            let $duration = $("#duration");
-            $duration.change((e) => updateCost(e.target.value))
-            updateCost($duration.val())
-        })
-    </script>
+    <script src="node_modules/tweetnacl/nacl.min.js"></script>
+    <script src="node_modules/jszip/dist/jszip.min.js"></script>
+    <script src="index.js"></script>
 </head>
 <body>
 <style>
@@ -40,6 +30,17 @@
     label {
         margin-right: 20px;
     }
+
+    .button {
+        background-color: #4CAF50; /* Green */
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+    }
 </style>
 <div class="content">
     <h1>
@@ -47,27 +48,11 @@
     </h1>
     <hr>
     <p>
-        <label for="pubkey">WireGuard Public Key</label>
-        <input type="text" id="pubkey">
+        WireGuard Public Key
+        <pre id="pubkey" style="background: #b4b4b4; color: black;"></pre>
     </p>
-    <p>
-        <label for="duration">Duration</label>
-        <select name="duration" id="duration">
-            <option value="1440">1 Day</option>
-            <option value="360">6 Hours</option>
-            <option value="180">3 Hours</option>
-            <option value="60" selected>1 Hour</option>
-            <option value="30">30 Minutes</option>
-        </select>
-    </p>
-    <p>
-        Cost
 
-        <b id="cost"></b>
-    </p>
-    <button id="submit">Buy</button>
-
-    <button id="config">Download Configuration</button>
+    <a id="downloadConfig" class="button">Download Config</a>
 </div>
 </body>
 </html>

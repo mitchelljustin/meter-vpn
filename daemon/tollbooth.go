@@ -64,7 +64,6 @@ type pendingExtension struct {
 }
 
 type Extension struct {
-	Pubkey   string `json:"pubkey"`
 	Duration string `json:"duration"`
 }
 
@@ -116,7 +115,7 @@ func (tb *TollBooth) HandleExtensionRequest(ctx *gin.Context) {
 		respondBadRequest(ctx, err)
 		return
 	}
-	pubkey, err := UnmarshalPublicKey(extension.Pubkey)
+	pubkey, err := UnmarshalPublicKey(ctx.Param("pubkey"))
 	if err != nil {
 		respondBadRequest(ctx, err)
 		return
@@ -145,12 +144,7 @@ func (tb *TollBooth) HandleExtensionRequest(ctx *gin.Context) {
 }
 
 func (tb *TollBooth) HandleGetPeerRequest(ctx *gin.Context) {
-	var getPeer GetPeer
-	if err := ctx.BindJSON(&getPeer); err != nil {
-		respondBadRequest(ctx, err)
-		return
-	}
-	pubkey, err := UnmarshalPublicKey(getPeer.Pubkey)
+	pubkey, err := UnmarshalPublicKey(ctx.Param("pubkey"))
 	if err != nil {
 		respondBadRequest(ctx, err)
 		return
@@ -161,8 +155,8 @@ func (tb *TollBooth) HandleGetPeerRequest(ctx *gin.Context) {
 		return
 	}
 	if expiry == nil {
-		ctx.Status(http.StatusNotFound)
-		return
+		e := time.Unix(0, 0)
+		expiry = &e
 	}
 	ip, err := tb.store.GetIPAddress(*pubkey)
 	if err != nil {

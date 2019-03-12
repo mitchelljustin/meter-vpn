@@ -52,8 +52,8 @@ func main() {
 func startGinServer(booth *daemon.TollBooth, port int) {
 	router := gin.Default()
 
-	router.POST("/api/extend", booth.HandleExtensionRequest)
-	router.GET("/api/peer", booth.HandleGetPeerRequest)
+	router.GET("/peer/:pubkey", booth.HandleGetPeerRequest)
+	router.POST("/peer/:pubkey/extend", booth.HandleExtensionRequest)
 
 	router.Static("/app", "./www")
 

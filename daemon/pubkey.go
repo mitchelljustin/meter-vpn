@@ -1,7 +1,7 @@
 package daemon
 
 import (
-	"encoding/base64"
+	"encoding/hex"
 	"errors"
 )
 
@@ -9,8 +9,8 @@ const PublicKeySize = 32
 
 type PublicKey = [PublicKeySize]byte
 
-func UnmarshalPublicKey(base64Pubkey string) (*PublicKey, error) {
-	pubkeyBytes, err := base64.StdEncoding.DecodeString(base64Pubkey)
+func UnmarshalPublicKey(hexPubkey string) (*PublicKey, error) {
+	pubkeyBytes, err := hex.DecodeString(hexPubkey)
 	if err != nil {
 		return nil, err
 	}
@@ -23,5 +23,5 @@ func UnmarshalPublicKey(base64Pubkey string) (*PublicKey, error) {
 }
 
 func MarshalPublicKey(pubkey PublicKey) string {
-	return base64.StdEncoding.EncodeToString(pubkey[:])
+	return hex.EncodeToString(pubkey[:])
 }
