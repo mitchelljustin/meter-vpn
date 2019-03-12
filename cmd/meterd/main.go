@@ -12,9 +12,16 @@ import (
 
 func main() {
 	port := flag.Int("p", 8000, "port")
-	dbPath := flag.String("d", "data/meter.db", "database path")
+	dbPath := flag.String("f", "data/meter.db", "database path")
 	watchInterval := flag.Uint("i", 15, "watch interval in seconds")
+	debugMode := flag.Bool("d", false, "debug mode")
 	flag.Parse()
+
+	if *debugMode {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
 	db, err := leveldb.OpenFile(*dbPath, nil)
 	if err != nil {
@@ -51,5 +58,6 @@ func startGinServer(booth *daemon.TollBooth, port int) {
 	router.Static("/app", "./www")
 
 	addr := fmt.Sprintf(":%v", port)
+	log.Printf("Server running at %v", addr)
 	log.Fatal(router.Run(addr))
 }

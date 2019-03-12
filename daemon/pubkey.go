@@ -14,8 +14,8 @@ func UnmarshalPublicKey(base64Pubkey string) (*PublicKey, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(pubkeyBytes) != 32 {
-		return nil, errors.New("public key must be 32 bytes")
+	if len(pubkeyBytes) != PublicKeySize {
+		return nil, errors.New("bad public key size")
 	}
 	var pubkey PublicKey
 	copy(pubkey[:PublicKeySize], pubkeyBytes)
