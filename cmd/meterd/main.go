@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/mvanderh/meter-vpn/daemon"
 	"github.com/syndtr/goleveldb/leveldb"
 	"log"
