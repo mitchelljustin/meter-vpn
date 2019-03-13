@@ -129,8 +129,5 @@ func (w *Watchman) DisconnectPeer(pubkey PublicKey) error {
 			},
 		},
 	})
-	if err == nil {
-		err = w.Store.Expire(pubkey)
-	}
 	return err
 }

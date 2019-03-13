@@ -17,7 +17,6 @@ type PeerStore interface {
 	GetIPAddress(pubkey PublicKey) (*net.IP, error)
 
 	GetAllPubkeys() ([]PublicKey, error)
-	Expire(pubkey PublicKey) error
 }
 
 type LevelDBPeerRecord struct {
@@ -91,9 +90,7 @@ func (s *LevelDBPeerStore) GetExpiry(pubkey PublicKey) (*time.Time, error) {
 	if err != nil {
 		return nil, err
 	}
-	if peer.Expiry == "" {
-		return nil, nil
-	} else if err != nil {
+	if err != nil || peer.Expiry == "" {
 		return nil, err
 	}
 	expiry, err := time.Parse(TimeLayout, peer.Expiry)
@@ -101,15 +98,6 @@ func (s *LevelDBPeerStore) GetExpiry(pubkey PublicKey) (*time.Time, error) {
 		return nil, err
 	}
 	return &expiry, nil
-}
-
-func (s *LevelDBPeerStore) Expire(pubkey PublicKey) error {
-	peer, err := s.getOrCreatePeer(pubkey)
-	if err != nil {
-		return err
-	}
-	peer.Expiry = ""
-	return s.savePeer(pubkey, peer)
 }
 
 func (s *LevelDBPeerStore) GetAllPubkeys() ([]PublicKey, error) {
