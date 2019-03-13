@@ -91,6 +91,7 @@ func (tb *TollBooth) Run() {
 		invoice, err := sub.Recv()
 		if err != nil {
 			log.Printf("Error receiving invoice: %v", err)
+			continue
 		}
 		if invoice.State != lnrpc.Invoice_SETTLED {
 			continue
@@ -127,7 +128,7 @@ func (tb *TollBooth) HandleExtensionRequest(ctx *gin.Context) {
 	}
 	sats := float64(duration) / float64(time.Minute) * SatsPerMin
 	invoice := lnrpc.Invoice{
-		Value: int64(math.Ceil(sats)),
+		Value: 1 + int64(math.Ceil(sats)),
 		Memo:  fmt.Sprintf("meter-vpn: +%v", duration),
 	}
 	resp, err := tb.lnClient.AddInvoice(tb.ctx, &invoice)

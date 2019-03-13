@@ -14,10 +14,10 @@ function toBase64(buffer) {
     return window.btoa(binary);
 }
 
-const satsPerMin = 5.7
+const SATOSHI_PER_MIN = 5.7
 
 $(document).ready(async () => {
-    const creds = generateCredentials()
+    const creds = nacl.box.keyPair()
     $("#pubkey").text(toHexString(creds.publicKey))
     const config = await generateConfigZip(creds)
     const link = $("#downloadConfig")
@@ -41,13 +41,4 @@ Endpoint = 159.89.121.214:52800
     const zip = new JSZip()
     zip.file("metervpn-1.conf", tunnelConf)
     return zip.generateAsync({type: "blob"})
-}
-
-function generateCredentials() {
-    const {publicKey, secretKey} = nacl.box.keyPair()
-
-    return {
-        publicKey,
-        secretKey,
-    }
 }
