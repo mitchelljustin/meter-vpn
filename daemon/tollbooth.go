@@ -129,7 +129,7 @@ func (tb *TollBooth) HandleExtensionRequest(ctx *gin.Context) {
 	sats := float64(duration) / float64(time.Minute) * SatsPerMin
 	invoice := lnrpc.Invoice{
 		Value: 1 + int64(math.Ceil(sats)),
-		Memo:  fmt.Sprintf("meter-vpn: +%v", duration),
+		Memo:  fmt.Sprintf("Add %v to MeterVPN allowance", duration),
 	}
 	resp, err := tb.lnClient.AddInvoice(tb.ctx, &invoice)
 	if err != nil {
@@ -166,6 +166,6 @@ func (tb *TollBooth) HandleGetPeerRequest(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, gin.H{
 		"expiry": expiry.Format(TimeFormat),
-		"ip":     ip.String(),
+		"ipv6":   ip.String(),
 	})
 }

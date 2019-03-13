@@ -26,11 +26,11 @@ $(document).ready(async () => {
 })
 
 async function generateConfigZip({publicKey, secretKey}) {
-    const {ip} = await $.getJSON(`/peer/${toHexString(publicKey)}`)
+    const {ipv6} = await $.getJSON(`/peer/${toHexString(publicKey)}`)
     const tunnelConf = `\
 [Interface]
 PrivateKey = ${toBase64(secretKey)}
-Address = ${ip}/32
+Address = ${ipv6}/128
 DNS = 1.1.1.1
 
 [Peer]
@@ -39,6 +39,6 @@ AllowedIPs = 0.0.0.0/0
 Endpoint = 159.89.121.214:52800
 `
     const zip = new JSZip()
-    zip.file("metervpn-1.conf", tunnelConf)
+    zip.file("metervpn-toronto-ca.conf", tunnelConf)
     return zip.generateAsync({type: "blob"})
 }

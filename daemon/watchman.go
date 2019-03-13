@@ -51,6 +51,7 @@ func (w *Watchman) Tick() {
 	device, err := w.wireguard.Device(WireguardDeviceName)
 	if err != nil {
 		w.Report("Error getting WireGuard device: %v", err)
+		return
 	}
 
 	pubkeys, err := w.Store.GetAllPubkeys()
@@ -106,7 +107,7 @@ func (w *Watchman) ConnectPeer(pubkey PublicKey, peers []wgtypes.Peer) error {
 	}
 	ipNet := net.IPNet{
 		IP:   *ip,
-		Mask: net.CIDRMask(32, 32),
+		Mask: net.CIDRMask(128, 128),
 	}
 	return w.wireguard.ConfigureDevice(WireguardDeviceName, wgtypes.Config{
 		Peers: []wgtypes.PeerConfig{

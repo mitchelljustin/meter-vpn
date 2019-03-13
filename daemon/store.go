@@ -1,11 +1,12 @@
 package daemon
 
 import (
-	"encoding/binary"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/util"
+	"math/big"
 	"net"
 	"time"
 )
@@ -21,7 +22,7 @@ type PeerStore interface {
 
 type LevelDBPeerRecord struct {
 	Expiry string `json:"expiry"`
-	IP     string `json:"ip"`
+	IPv6   string `json:"ipv6"`
 }
 
 type LevelDBPeerStore struct {
@@ -30,12 +31,13 @@ type LevelDBPeerStore struct {
 
 const TimeLayout = time.RFC3339
 
-const HighestIPKey = "highestIP"
+const IPv6Prefix = "fddf:cbfb:7aa3:0001"
+
+const HighestIPKey = "/highestIP"
 
 func keyForPubkey(pubkey PublicKey) []byte {
-	return []byte(
-		fmt.Sprintf("pubkey:%v", MarshalPublicKey(pubkey)),
-	)
+	key := fmt.Sprintf("/peer/%v", MarshalPublicKey(pubkey))
+	return []byte(key)
 }
 
 func (s *LevelDBPeerStore) savePeer(pubkey PublicKey, peer *LevelDBPeerRecord) error {
@@ -43,7 +45,8 @@ func (s *LevelDBPeerStore) savePeer(pubkey PublicKey, peer *LevelDBPeerRecord) e
 	if err != nil {
 		return err
 	}
-	return s.DB.Put(keyForPubkey(pubkey), obj, nil)
+	key := keyForPubkey(pubkey)
+	return s.DB.Put(key, obj, nil)
 }
 
 func (s *LevelDBPeerStore) getOrCreatePeer(pubkey PublicKey) (*LevelDBPeerRecord, error) {
@@ -110,10 +113,10 @@ func (s *LevelDBPeerStore) Expire(pubkey PublicKey) error {
 }
 
 func (s *LevelDBPeerStore) GetAllPubkeys() ([]PublicKey, error) {
-	iter := s.DB.NewIterator(util.BytesPrefix([]byte("pubkey:")), nil)
+	iter := s.DB.NewIterator(util.BytesPrefix([]byte("/peer/")), nil)
 	var pubkeys []PublicKey = nil
 	for iter.Next() {
-		pubkeyStr := string(iter.Key())[7:]
+		pubkeyStr := string(iter.Key())[6:]
 		pubkey, err := UnmarshalPublicKey(pubkeyStr)
 		if err != nil {
 			return nil, err
@@ -128,28 +131,28 @@ func (s *LevelDBPeerStore) GetIPAddress(pubkey PublicKey) (*net.IP, error) {
 	if err != nil {
 		return nil, err
 	}
-	if peer.IP == "" {
+	if peer.IPv6 == "" {
 		highestIP, err := s.DB.Get([]byte(HighestIPKey), nil)
 		if err == leveldb.ErrNotFound {
-			highestIP = net.ParseIP("10.0.0.1")
+			highestIP = net.ParseIP(fmt.Sprintf("%v::1", IPv6Prefix))
 		} else if err != nil {
 			return nil, err
 		}
-		// TODO: cleverer way to allocate IP addresses
-		ipInt := binary.BigEndian.Uint32(highestIP[12:])
-		newPInt := ipInt + 1
-		newIPBytes := [4]byte{}
-		binary.BigEndian.PutUint32(newIPBytes[:], newPInt)
-		newIP := net.IPv4(newIPBytes[0], newIPBytes[1], newIPBytes[2], newIPBytes[3])
+		ipInt := new(big.Int).SetBytes(highestIP)
+		ipInt.Add(ipInt, big.NewInt(1))
+		newIP := net.IP(ipInt.Bytes())
+		if newIP.Equal(net.ParseIP(fmt.Sprintf("%v:ffff:ffff:ffff:ffff", IPv6Prefix))) {
+			// Overflow
+			return nil, errors.New("out of ipv6 addresses")
+		}
 		if err := s.DB.Put([]byte(HighestIPKey), newIP[:], nil); err != nil {
 			return nil, err
 		}
-		peer.IP = newIP.String()
+		peer.IPv6 = newIP.String()
 		if err := s.savePeer(pubkey, peer); err != nil {
 			return nil, err
 		}
-		// TODO: check 10.0.0.0 namespace overflow
 	}
-	peerIP := net.ParseIP(peer.IP)
+	peerIP := net.ParseIP(peer.IPv6)
 	return &peerIP, nil
 }
