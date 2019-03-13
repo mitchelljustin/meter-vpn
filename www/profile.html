@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MeterVPN - VPN by the minute</title>
+    <script src="node_modules/tweetnacl/nacl.min.js"></script>
+    <script src="node_modules/jszip/dist/jszip.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+        crossorigin="anonymous">
+    <script src="index.js"></script>
+</head>
+
+<body>
+    <nav class="nav m-3">
+        <a class="nav-link text-dark" href="/">Get MeterVPN</a>
+        <a class="nav-link text-dark ml-auto" href="/topUp">Top Up</a>
+        <a class="nav-link text-dark" href="/">FAQ</a>
+        <a class="nav-link text-dark" href="/">About</a>
+    </nav>
+    <div class="container mt-5">
+
+        <div class="row">
+            <div class="col-md-5">
+                <h3>Top Up Terminal</h3>
+                <div class="d-flex justify-content-between">
+                    <div class="text-center">
+                        <div class="display-1">0</div>
+                        <p>days</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="display-1">0</div>
+                        <p>hours</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="display-1">0</div>
+                        <p>minutes</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-7 p-5">
+                <h5>
+                    Extend session:
+                </h5>
+                <div class="input-group">
+                    <select class="custom-select" id="inputGroupSelect04">
+                        <option selected>Choose plan...</option>
+                        <option value=3>3 hours</option>
+                        <option value=6>6 hours</option>
+                        <option value=24>1 day</option>
+                        <option value=72>3 days</option>
+                        <option value=168>1 week</option>
+                        <option value=720>30 days</option>
+                    </select>
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" id="genPayReq">Buy</button>
+                    </div>
+                </div>
+                <div class="row my-4">
+                    <div class="col-6">
+                        <p>BTC <span id="btcCost">0.00000000</span></p>
+                    </div>
+                    <div class="col-6">
+                        <p>USD <span id="usdCost">$0.00</span></p>
+                    </div>
+                </div>
+                <div class="row my-4">
+                    <div class="col-4">
+                        <div id="payReqQR">
+                            <strong>#payReqQR</strong>
+                        </div>
+                    </div>
+                    <div class="col-8 w-100 bg-light">
+                        <div id="payReqStr"><strong>#payReqStr</strong> Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat consectetur enim eaque distinctio ab itaque incidunt.</div>
+                    </div>
+                </div>
+                <div class="alert alert-danger">IMPORTANT: Check your WireGuard tunnel names to see that it matches the ID of <strong>this</strong> terminal. </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        #payReqStr {
+            width: 100%;
+            height: 5em;
+        }
+        #payReqQR {
+            width: 100px;
+            height: 100px;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js" integrity="sha384-xrRywqdh3PHs8keKZN+8zzc5TX0GRTLCcmivcbNJWm2rs5C8PRhcEn3czEjhAO9o"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
