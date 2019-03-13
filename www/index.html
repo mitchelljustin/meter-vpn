@@ -1,58 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>MeterVPN - VPN by the minute</title>
-    <script
-            src="https://code.jquery.com/jquery-3.3.1.min.js"
-            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-            crossorigin="anonymous"></script>
     <script src="node_modules/tweetnacl/nacl.min.js"></script>
     <script src="node_modules/jszip/dist/jszip.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
     <script src="index.js"></script>
 </head>
+
 <body>
-<style>
-    body {
-        font-family: "Helvetica Neue", sans-serif;
-        background: #1c1c1c;
-        color: #b4b4b4;
-    }
-
-    .content {
-        margin: 25px 50px;
-    }
-
-    h1 {
-        color: #c28306;
-    }
-
-    label {
-        margin-right: 20px;
-    }
-
-    .button {
-        background-color: #4CAF50; /* Green */
-        border: none;
-        color: white;
-        padding: 15px 32px;
-        text-align: center;
-        text-decoration: none;
-        display: inline-block;
-        font-size: 16px;
-    }
-</style>
-<div class="content">
-    <h1>
-        MeterVPN - VPN by the minute
-    </h1>
-    <hr>
-    <p>
-        WireGuard Public Key
-        <pre id="pubkey" style="background: #b4b4b4; color: black;"></pre>
-    </p>
-
-    <a id="downloadConfig" class="button">Download Config</a>
-</div>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+        <nav class="nav m-3">
+            <a class="nav-link text-dark" href="/">Get MeterVPN</a>
+            <a class="nav-link text-dark ml-auto" href="/topUp">Top Up</a>
+            <a class="nav-link text-dark" href="/">FAQ</a>
+            <a class="nav-link text-dark" href="/">About</a>
+          </nav>
+          <h1 class="text-center m-5">Get MeterVPN</h1>
+          <div class="container w-50 mx-auto border rounded border-primary p-4">
+            <ol>
+                <li class="p-3">Install WireGuard for your OS.</li>
+                <li class="p-3">Download configuration .zip file. (Includes 3 hour trial)</li>
+                <button class="btn btn-primary d-flex p-3 m-auto" id="genConfig">Generate my new config.zip</button>
+                <li class="p-3">Import .zip file to WireGuard tunnels manager</li>
+                <img class="mx-auto d-block" src="assets/Screen Shot 2019-03-13 at 12.20.02 AM.png">
+                <li class="p-3">To top up access for <strong>this</strong> session, visit:</li>
+                https://metervpn.com/<span class="text-primary" id="topUpKey">whiskey-tango-foxtrot</span>
+                <button class="btn btn-primary" id="goTopUp">Go</button>
+            </ol>
+          </div>
 </body>
+
 </html>
