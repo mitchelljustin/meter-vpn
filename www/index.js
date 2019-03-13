@@ -14,15 +14,16 @@ function toBase64(buffer) {
     return window.btoa(binary);
 }
 
-const SATOSHI_PER_MIN = 5.7
-
 $(document).ready(async () => {
     const creds = nacl.box.keyPair()
-    $("#pubkey").text(toHexString(creds.publicKey))
+    let pubKeyHex = toHexString(creds.publicKey);
+    $("#pubkey").text(pubKeyHex)
     const config = await generateConfigZip(creds)
-    const link = $("#downloadConfig")
+    const link = $("#genConfig")
     link.attr("href", URL.createObjectURL(config))
-    link.attr("download", `metervpn-config-${toHexString(creds.publicKey).slice(0, 32)}.zip`)
+    link.attr("download", `metervpn-config-${pubKeyHex.slice(0, 32)}.zip`)
+    $("#topUpKey").text(`${pubKeyHex.slice(0, 16)}...`)
+    $("#goTopUp").attr("href", `/x/${pubKeyHex}`)
 })
 
 async function generateConfigZip({publicKey, secretKey}) {

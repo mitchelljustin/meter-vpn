@@ -18,7 +18,7 @@ import (
 
 const TimeFormat = time.RFC1123
 
-const SatsPerMin = 5.8
+const SatsPerHour = 250
 
 type TollBooth struct {
 	store           PeerStore
@@ -126,9 +126,9 @@ func (tb *TollBooth) HandleExtensionRequest(ctx *gin.Context) {
 		respondBadRequest(ctx, err)
 		return
 	}
-	sats := float64(duration) / float64(time.Minute) * SatsPerMin
+	sats := float64(duration) / float64(time.Hour) * SatsPerHour
 	invoice := lnrpc.Invoice{
-		Value: 1 + int64(math.Ceil(sats)),
+		Value: int64(math.Ceil(sats)),
 		Memo:  fmt.Sprintf("Add %v to MeterVPN allowance", duration),
 	}
 	resp, err := tb.lnClient.AddInvoice(tb.ctx, &invoice)
@@ -141,7 +141,7 @@ func (tb *TollBooth) HandleExtensionRequest(ctx *gin.Context) {
 		Pubkey:   *pubkey,
 		Duration: duration,
 	}
-	ctx.String(402, "lightning:%v", payReq)
+	ctx.String(402, payReq)
 }
 
 func (tb *TollBooth) HandleGetPeerRequest(ctx *gin.Context) {

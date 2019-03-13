@@ -55,7 +55,13 @@ func startGinServer(booth *daemon.TollBooth, port int) {
 	router.GET("/peer/:pubkey", booth.HandleGetPeerRequest)
 	router.POST("/peer/:pubkey/extend", booth.HandleExtensionRequest)
 
-	router.Static("/app", "./www")
+	router.Static("/static", "./www")
+	router.GET("/", func(ctx *gin.Context) {
+		ctx.File("./www/index.html")
+	})
+	router.GET("/x/:pubkey", func(ctx *gin.Context) {
+		ctx.File("./www/profile.html")
+	})
 
 	addr := fmt.Sprintf(":%v", port)
 	log.Printf("Server running at %v", addr)
