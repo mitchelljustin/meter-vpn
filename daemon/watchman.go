@@ -15,7 +15,7 @@ type Watchman struct {
 	Store    PeerStore
 	Interval time.Duration
 
-	wireguard *wireguardctrl.Client
+	wireGuard *wireguardctrl.Client
 }
 
 func (w *Watchman) Report(format string, v ...interface{}) {
@@ -25,7 +25,7 @@ func (w *Watchman) Report(format string, v ...interface{}) {
 func (w *Watchman) Run() {
 	log.Printf("Running Watchman at interval: %v", w.Interval)
 	w.ConnectToWireGuard()
-	defer w.wireguard.Close()
+	defer w.wireGuard.Close()
 
 	ticker := time.NewTicker(w.Interval)
 	for {
@@ -42,13 +42,13 @@ func (w *Watchman) ConnectToWireGuard() {
 		return
 	}
 
-	w.wireguard = client
+	w.wireGuard = client
 }
 
 func (w *Watchman) Tick() {
 	now := time.Now()
 	w.Report("TICK %v", now)
-	device, err := w.wireguard.Device(WireguardDeviceName)
+	device, err := w.wireGuard.Device(WireguardDeviceName)
 	if err != nil {
 		w.Report("Error getting WireGuard device: %v", err)
 		return
@@ -109,7 +109,7 @@ func (w *Watchman) ConnectPeer(pubkey PublicKey, peers []wgtypes.Peer) error {
 		IP:   *ip,
 		Mask: net.CIDRMask(128, 128),
 	}
-	return w.wireguard.ConfigureDevice(WireguardDeviceName, wgtypes.Config{
+	return w.wireGuard.ConfigureDevice(WireguardDeviceName, wgtypes.Config{
 		Peers: []wgtypes.PeerConfig{
 			{
 				PublicKey:  pubkey,
@@ -121,7 +121,7 @@ func (w *Watchman) ConnectPeer(pubkey PublicKey, peers []wgtypes.Peer) error {
 
 func (w *Watchman) DisconnectPeer(pubkey PublicKey) error {
 	w.Report("Disconnecting peer: %v", MarshalPublicKey(pubkey))
-	err := w.wireguard.ConfigureDevice(WireguardDeviceName, wgtypes.Config{
+	err := w.wireGuard.ConfigureDevice(WireguardDeviceName, wgtypes.Config{
 		Peers: []wgtypes.PeerConfig{
 			{
 				PublicKey: pubkey,
