@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 	"github.com/mvanderh/meter-vpn/daemon"
 	"github.com/syndtr/goleveldb/leveldb"
 	"log"
@@ -23,14 +24,14 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	db, err := leveldb.OpenFile(*dbPath, nil)
+	db, err := gorm.Open("sqlite3", "data/meter.db")
 	if err != nil {
 		log.Fatalf("DB Error: %v", err)
 	}
 	defer db.Close()
-	store := daemon.LevelDBPeerStore{DB: db}
+	daemon.MigrateModels(db)
 
-	booth, err := daemon.NewTollBooth(&store, daemon.LNDParams{
+	booth, err := daemon.NewTollBooth(db, daemon.LNDParams{
 		MacaroonPath: "secret/admin.macaroon",
 		CertPath:     "secret/tls.cert",
 		Hostname:     "159.89.121.214:10009",
@@ -41,7 +42,7 @@ func main() {
 	go booth.Run()
 
 	watchman := daemon.Watchman{
-		Store:    &store,
+		Store:    db,
 		Interval: time.Duration(*watchInterval) * time.Second,
 	}
 	go watchman.Run()

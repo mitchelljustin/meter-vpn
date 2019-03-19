@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 	"github.com/lightningnetwork/lnd/lnrpc"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -21,7 +22,7 @@ const TimeFormat = time.RFC1123
 const SatsPerHour = 250
 
 type TollBooth struct {
-	store           PeerStore
+	db              *gorm.DB
 	ctx             context.Context
 	lnClient        lnrpc.LightningClient
 	pendingInvoices map[string]pendingExtension
@@ -33,7 +34,7 @@ type LNDParams struct {
 	CertPath     string
 }
 
-func NewTollBooth(store PeerStore, lndParams LNDParams) (*TollBooth, error) {
+func NewTollBooth(db *gorm.DB, lndParams LNDParams) (*TollBooth, error) {
 	creds, err := credentials.NewClientTLSFromFile(lndParams.CertPath, "")
 	if err != nil {
 		return nil, err
@@ -50,7 +51,7 @@ func NewTollBooth(store PeerStore, lndParams LNDParams) (*TollBooth, error) {
 	ctx := context.Background()
 	ctx = metadata.AppendToOutgoingContext(ctx, "macaroon", macaroonHex)
 	booth := TollBooth{
-		store:           store,
+		db:              db,
 		ctx:             ctx,
 		lnClient:        lnrpc.NewLightningClient(conn),
 		pendingInvoices: make(map[string]pendingExtension),
@@ -102,7 +103,10 @@ func (tb *TollBooth) Run() {
 		if extension, ok = tb.pendingInvoices[payReq]; !ok {
 			continue
 		}
-		_, err = tb.store.AddAllowance(extension.Pubkey, extension.Duration)
+		var peer Peer
+		tb.db.First(&peer, Peer{PublicKey: extension.Pubkey}).Count(&count)
+
+		_, err = tb.db.AddAllowance(extension.Pubkey, extension.Duration)
 		if err != nil {
 			log.Printf("Error adding allowance: %v", err)
 		}
@@ -150,7 +154,7 @@ func (tb *TollBooth) HandleGetPeerRequest(ctx *gin.Context) {
 		respondBadRequest(ctx, err)
 		return
 	}
-	expiry, err := tb.store.GetExpiry(*pubkey)
+	expiry, err := tb.db.GetExpiry(*pubkey)
 	if err != nil {
 		respondServerError(ctx, err)
 		return
@@ -159,7 +163,7 @@ func (tb *TollBooth) HandleGetPeerRequest(ctx *gin.Context) {
 		e := time.Unix(0, 0)
 		expiry = &e
 	}
-	ip, err := tb.store.GetIPAddress(*pubkey)
+	ip, err := tb.db.GetIPAddress(*pubkey)
 	if err != nil {
 		respondServerError(ctx, err)
 		return
