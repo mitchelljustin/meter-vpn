@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"github.com/mvanderh/meter-vpn/daemon"
-	"github.com/syndtr/goleveldb/leveldb"
 	"log"
 	"time"
 )
@@ -24,14 +23,16 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	db, err := gorm.Open("sqlite3", "data/meter.db")
+	db, err := gorm.Open("sqlite3", *dbPath)
 	if err != nil {
 		log.Fatalf("DB Error: %v", err)
 	}
 	defer db.Close()
-	daemon.MigrateModels(db)
+	daemon.MigrateSQLModels(db)
 
-	booth, err := daemon.NewTollBooth(db, daemon.LNDParams{
+	store := &daemon.SQLitePeerStore{DB: db}
+
+	booth, err := daemon.NewTollBooth(store, daemon.LNDParams{
 		MacaroonPath: "secret/admin.macaroon",
 		CertPath:     "secret/tls.cert",
 		Hostname:     "159.89.121.214:10009",
@@ -42,7 +43,7 @@ func main() {
 	go booth.Run()
 
 	watchman := daemon.Watchman{
-		Store:    db,
+		Store:    store,
 		Interval: time.Duration(*watchInterval) * time.Second,
 	}
 	go watchman.Run()
@@ -53,14 +54,16 @@ func main() {
 func startGinServer(booth *daemon.TollBooth, port int) {
 	router := gin.Default()
 
-	router.GET("/peer/:pubkey", booth.HandleGetPeerRequest)
-	router.POST("/peer/:pubkey/extend", booth.HandleExtensionRequest)
+	router.POST("/peer", booth.HandleCreatePeerRequest)
+	router.GET("/peer/:accountId", booth.HandleGetPeerRequest)
+	router.POST("/peer/:accountId/config", booth.HandleSetConfigRequest)
+	router.POST("/peer/:accountId/extend", booth.HandleExtensionRequest)
 
 	router.Static("/static", "./www")
 	router.GET("/", func(ctx *gin.Context) {
 		ctx.File("./www/index.html")
 	})
-	router.GET("/x/:pubkey", func(ctx *gin.Context) {
+	router.GET("/x/:accountId", func(ctx *gin.Context) {
 		ctx.File("./www/profile.html")
 	})
 

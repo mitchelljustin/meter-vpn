@@ -47,87 +47,100 @@ func (w *Watchman) ConnectToWireGuard() {
 
 func (w *Watchman) Tick() {
 	now := time.Now()
-	w.Report("TICK %v", now)
+	w.Report("TICK: %v", now)
 	device, err := w.wireGuard.Device(WireguardDeviceName)
 	if err != nil {
 		w.Report("Error getting WireGuard device: %v", err)
 		return
 	}
 
-	pubkeys, err := w.Store.GetAllPubkeys()
+	peers, err := w.Store.GetConnectedPeers()
 	if err != nil {
-		w.Report("Error getting all pubkeys: %v", err)
+		w.Report("Error getting connected peers: %v", err)
 		return
 	}
-	for _, pubkey := range pubkeys {
-		pubkeyStr := MarshalPublicKey(pubkey)
-
-		expiry, err := w.Store.GetExpiry(pubkey)
-		if err != nil {
-			w.Report("Error getting expiry for %v, %v", pubkeyStr, err)
-			continue
-		}
-		if expiry == nil {
-			continue
-		}
-		w.Report("Checking %v (expiry %v)", pubkeyStr, *expiry)
-		if now.After(*expiry) {
-			w.Report("Peer %v is out of allowance", pubkeyStr)
-			err := w.DisconnectPeer(pubkey)
+	for _, peer := range peers {
+		w.Report("Checking %v (expiry %v)", peer.AccountID, peer.ExpiryDate)
+		if now.After(peer.ExpiryDate) {
+			w.Report("Peer %v is out of allowance", peer.AccountID)
+			err := w.DisconnectPeer(&peer)
 			if err != nil {
 				w.Report("ERROR: Could not disconnect peer, %v", err)
 			}
 		} else {
 			if device == nil {
-				w.Report("Device not found, skipping peer connection")
+				w.Report("Device not found, skipping devicePeer connection")
+				continue
+			}
+			key, err := KeyFromBase64(*peer.PublicKeyB64)
+			if err != nil {
+				w.Report("ERROR: %v", err)
 				continue
 			}
 			found := false
-			for _, peer := range device.Peers {
-				if peer.PublicKey.String() == pubkeyStr {
+			for _, devicePeer := range device.Peers {
+				if devicePeer.PublicKey == *key {
 					found = true
 					break
 				}
 			}
 			if !found {
-				err := w.ConnectPeer(pubkey, device.Peers)
+				err := w.ConnectPeer(&peer)
 				if err != nil {
-					w.Report("ERROR: Could not connect peer, %v", err)
+					w.Report("ERROR: Could not connect devicePeer, %v", err)
 				}
 			}
+		}
+		if err := w.Store.SavePeer(&peer); err != nil {
+			w.Report("ERROR saving peer: %v", err)
 		}
 	}
 }
 
-func (w *Watchman) ConnectPeer(pubkey PublicKey, peers []wgtypes.Peer) error {
-	w.Report("Connecting peer: %v", MarshalPublicKey(pubkey))
-	ip, err := w.Store.GetIPAddress(pubkey)
+func (w *Watchman) ConnectPeer(peer *Peer) error {
+	w.Report("Connecting peer: %v", peer.PublicKeyB64)
+	ipv4 := net.IPNet{
+		IP:   *peer.IPv4,
+		Mask: net.CIDRMask(32, 32),
+	}
+	ipv6 := net.IPNet{
+		IP:   *peer.IPv6,
+		Mask: net.CIDRMask(128, 128),
+	}
+	key, err := KeyFromBase64(*peer.PublicKeyB64)
 	if err != nil {
 		return err
 	}
-	ipNet := net.IPNet{
-		IP:   *ip,
-		Mask: net.CIDRMask(128, 128),
-	}
-	return w.wireGuard.ConfigureDevice(WireguardDeviceName, wgtypes.Config{
+	if err := w.wireGuard.ConfigureDevice(WireguardDeviceName, wgtypes.Config{
 		Peers: []wgtypes.PeerConfig{
 			{
-				PublicKey:  pubkey,
-				AllowedIPs: []net.IPNet{ipNet},
+				PublicKey:  *key,
+				AllowedIPs: []net.IPNet{ipv4, ipv6},
 			},
 		},
-	})
+	}); err != nil {
+		return err
+	}
+	peer.Connected = true
+	return nil
 }
 
-func (w *Watchman) DisconnectPeer(pubkey PublicKey) error {
-	w.Report("Disconnecting peer: %v", MarshalPublicKey(pubkey))
-	err := w.wireGuard.ConfigureDevice(WireguardDeviceName, wgtypes.Config{
+func (w *Watchman) DisconnectPeer(peer *Peer) error {
+	w.Report("Disconnecting peer: %v", peer.PublicKeyB64)
+	key, err := KeyFromBase64(*peer.PublicKeyB64)
+	if err != nil {
+		return err
+	}
+	if err := w.wireGuard.ConfigureDevice(WireguardDeviceName, wgtypes.Config{
 		Peers: []wgtypes.PeerConfig{
 			{
-				PublicKey: pubkey,
+				PublicKey: *key,
 				Remove:    true,
 			},
 		},
-	})
-	return err
+	}); err != nil {
+		return err
+	}
+	peer.Connected = false
+	return nil
 }

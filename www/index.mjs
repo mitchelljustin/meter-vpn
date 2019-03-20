@@ -1,6 +1,6 @@
-import * as base32 from "base32"
-import * as nacl from "tweetnacl"
-import JSZip from "jszip"
+import * as base32 from "./node_modules/base32/lib/base32.js"
+import * as nacl from "./node_modules/tweetnacl/nacl-fast.min.js"
+import * as JSZip from "./node_modules/jszip/dist/jszip.js"
 
 function toHexString(byteArray) {
     return Array.prototype.map.call(byteArray, function (byte) {

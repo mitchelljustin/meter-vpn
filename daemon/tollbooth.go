@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 	"github.com/lightningnetwork/lnd/lnrpc"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -22,7 +21,7 @@ const TimeFormat = time.RFC1123
 const SatsPerHour = 250
 
 type TollBooth struct {
-	db              *gorm.DB
+	store           PeerStore
 	ctx             context.Context
 	lnClient        lnrpc.LightningClient
 	pendingInvoices map[string]pendingExtension
@@ -34,7 +33,7 @@ type LNDParams struct {
 	CertPath     string
 }
 
-func NewTollBooth(db *gorm.DB, lndParams LNDParams) (*TollBooth, error) {
+func NewTollBooth(store PeerStore, lndParams LNDParams) (*TollBooth, error) {
 	creds, err := credentials.NewClientTLSFromFile(lndParams.CertPath, "")
 	if err != nil {
 		return nil, err
@@ -51,7 +50,7 @@ func NewTollBooth(db *gorm.DB, lndParams LNDParams) (*TollBooth, error) {
 	ctx := context.Background()
 	ctx = metadata.AppendToOutgoingContext(ctx, "macaroon", macaroonHex)
 	booth := TollBooth{
-		db:              db,
+		store:           store,
 		ctx:             ctx,
 		lnClient:        lnrpc.NewLightningClient(conn),
 		pendingInvoices: make(map[string]pendingExtension),
@@ -60,16 +59,20 @@ func NewTollBooth(db *gorm.DB, lndParams LNDParams) (*TollBooth, error) {
 }
 
 type pendingExtension struct {
-	Pubkey   PublicKey
-	Duration time.Duration
+	AccountID string
+	Duration  time.Duration
 }
 
-type Extension struct {
+type ExtensionJSON struct {
 	Duration string `json:"duration"`
 }
 
-type GetPeer struct {
-	Pubkey string `json:"pubkey"`
+type VPNConfigJSON struct {
+	PublicKey string `json:"publicKey"`
+	IP        struct {
+		V4 string
+		V6 string
+	}
 }
 
 func respondBadRequest(ctx *gin.Context, err error) {
@@ -103,26 +106,32 @@ func (tb *TollBooth) Run() {
 		if extension, ok = tb.pendingInvoices[payReq]; !ok {
 			continue
 		}
-		var peer Peer
-		tb.db.First(&peer, Peer{PublicKey: extension.Pubkey}).Count(&count)
-
-		_, err = tb.db.AddAllowance(extension.Pubkey, extension.Duration)
+		peer, err := tb.store.GetPeer(extension.AccountID)
 		if err != nil {
-			log.Printf("Error adding allowance: %v", err)
+			continue
+		}
+		peer.AddAllowance(extension.Duration)
+		if err = tb.store.SavePeer(peer); err != nil {
+			log.Printf("Error saving peer: %v", err)
 		}
 		delete(tb.pendingInvoices, payReq)
 	}
 }
 
 func (tb *TollBooth) HandleExtensionRequest(ctx *gin.Context) {
-	var extension Extension
+	var extension ExtensionJSON
 	if err := ctx.BindJSON(&extension); err != nil {
 		respondBadRequest(ctx, err)
 		return
 	}
-	pubkey, err := UnmarshalPublicKey(ctx.Param("pubkey"))
+	accountId := ctx.Param("accountId")
+	peer, err := tb.store.GetPeer(accountId)
 	if err != nil {
-		respondBadRequest(ctx, err)
+		respondServerError(ctx, err)
+		return
+	}
+	if peer == nil {
+		ctx.Status(404)
 		return
 	}
 	duration, err := time.ParseDuration(fmt.Sprintf("%vs", extension.Duration))
@@ -142,34 +151,62 @@ func (tb *TollBooth) HandleExtensionRequest(ctx *gin.Context) {
 	}
 	payReq := resp.PaymentRequest
 	tb.pendingInvoices[payReq] = pendingExtension{
-		Pubkey:   *pubkey,
-		Duration: duration,
+		AccountID: accountId,
+		Duration:  duration,
 	}
 	ctx.String(402, payReq)
 }
 
 func (tb *TollBooth) HandleGetPeerRequest(ctx *gin.Context) {
-	pubkey, err := UnmarshalPublicKey(ctx.Param("pubkey"))
+	accountId := ctx.Param("accountId")
+	peer, err := tb.store.GetPeer(accountId)
+	if err == ErrPeerNotFound {
+		ctx.Status(404)
+		return
+	} else if err != nil {
+		respondServerError(ctx, err)
+		return
+	}
+	ctx.JSON(200, PeerToJSON(peer))
+}
+
+func PeerToJSON(peer *Peer) gin.H {
+	var publicKey, ipv4, ipv6 string
+	if peer.PublicKeyB64 != nil {
+		publicKey = *peer.PublicKeyB64
+	}
+	if peer.IPv4 != nil {
+		ipv4 = peer.IPv4.String()
+	}
+	if peer.IPv6 != nil {
+		ipv4 = peer.IPv6.String()
+	}
+	return gin.H{
+		"accountId": peer.AccountID,
+		"publicKey": publicKey,
+		"ip": gin.H{
+			"v4": ipv4,
+			"v6": ipv6,
+		},
+		"expiryDate": peer.ExpiryDate.Format(TimeFormat),
+	}
+}
+
+func (tb *TollBooth) HandleCreatePeerRequest(ctx *gin.Context) {
+	peer, err := tb.store.CreatePeer()
 	if err != nil {
+		respondServerError(ctx, err)
+		return
+	}
+	ctx.JSON(200, PeerToJSON(peer))
+}
+
+func (tb *TollBooth) HandleSetConfigRequest(ctx *gin.Context) {
+	var config VPNConfigJSON
+	if err := ctx.ShouldBindJSON(&config); err != nil {
 		respondBadRequest(ctx, err)
 		return
 	}
-	expiry, err := tb.db.GetExpiry(*pubkey)
-	if err != nil {
-		respondServerError(ctx, err)
-		return
-	}
-	if expiry == nil {
-		e := time.Unix(0, 0)
-		expiry = &e
-	}
-	ip, err := tb.db.GetIPAddress(*pubkey)
-	if err != nil {
-		respondServerError(ctx, err)
-		return
-	}
-	ctx.JSON(http.StatusOK, gin.H{
-		"expiry": expiry.Format(TimeFormat),
-		"ipv6":   ip.String(),
-	})
+	// TODO
+	ctx.Status(200)
 }
