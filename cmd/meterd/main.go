@@ -63,8 +63,8 @@ func startGinServer(booth *daemon.TollBooth, port int) {
 	router.GET("/", func(ctx *gin.Context) {
 		ctx.File("./www/index.html")
 	})
-	router.GET("/x/:accountId", func(ctx *gin.Context) {
-		ctx.File("./www/profile.html")
+	router.GET("/account", func(ctx *gin.Context) {
+		ctx.File("./www/account.html")
 	})
 
 	addr := fmt.Sprintf(":%v", port)

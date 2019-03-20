@@ -33,8 +33,8 @@ function numberWithCommas(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
-async function refreshDuration(pubkeyHex) {
-    const {expiry} = await $.getJSON(`/peer/${pubkeyHex}`)
+async function refreshDuration(accountId) {
+    const {expiryDate: expiry} = await $.getJSON(`/peer/${accountId}`)
     const expiryDate = new Date(expiry).getTime()
     const now = new Date().getTime()
     const delta = (expiryDate - now) / 1000
@@ -49,14 +49,13 @@ async function refreshDuration(pubkeyHex) {
 $(document).ready(async () => {
     const $durationSelect = $("#durationSelect");
 
-    const pubkeyHex = window.location.pathname.split("/")[2]
-    const pubkeyBase64 = toBase64(hexStringToByte(pubkeyHex))
-    $("#pubkeyBase64").text(pubkeyBase64)
+    const accountId = Cookies.get("accountId")
+    $("#accountId").text(accountId)
     $("#genPayReq").click(async () => {
         const duration = String(3600 * parseInt($durationSelect.val()))
         try {
             await $.ajax({
-                url: `/peer/${pubkeyHex}/extend`,
+                url: `/peer/${accountId}/extend`,
                 type: "POST",
                 dataType: "json",
                 data: JSON.stringify({duration}),
@@ -81,6 +80,6 @@ $(document).ready(async () => {
         $("#satCost").text(numberWithCommas(sats))
         $("#usdCost").text(`$${usd.toFixed(4)}`)
     })
-    await refreshDuration(pubkeyHex)
+    await refreshDuration(accountId)
     setTimeout(refreshDuration, 1000 * 60)
 })

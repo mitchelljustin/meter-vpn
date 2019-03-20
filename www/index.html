@@ -7,10 +7,11 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
           integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
           crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
-            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-            crossorigin="anonymous"></script>
-    <script type="module" src="index.mjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+    <script src="/static/node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="/static/node_modules/jszip/dist/jszip.min.js"></script>
+    <script src="/static/node_modules/tweetnacl/nacl-fast.min.js"></script>
+    <script src="/static/index.js"></script>
 </head>
 
 <body>
@@ -23,15 +24,16 @@
 <h1 class="text-center m-5">Get MeterVPN</h1>
 <div class="container w-50 mx-auto border rounded border-primary p-4">
     <ol>
-        <li class="p-3">Install <a href="https://www.wireguard.com/install/">WireGuard</a>.</li>
-        <a class="btn btn-primary d-inline-flex d-flex p-3 m-auto" id="genConfig">Create new account</a>
-        <li class="p-3"><strong>FVW47PYFPN4Q3XUT</strong></li>
-        <a class="btn d-inline-flex d-flex p-3 m-auto" id="genConfig">Generate my new config.zip</a>
-        <li class="p-3">Import .zip file to WireGuard tunnels manager</li>
-        <img class="mx-auto d-block" src="/static/assets/Wireguard_Import_Guide.png">
-        <li class="p-3">To top up access for <strong>this</strong> session, visit:</li>
-        https://metervpn.com/<span class="text-primary" id="topUpKey">...</span>
-        <a class="btn btn-primary" id="goTopUp">Go</a>
+        <li class="p-3">
+            Install <a href="https://www.wireguard.com/install/">WireGuard</a>.
+        </li>
+        <li class="p-3">
+            <a id="createNewAccount" href="#">Create new account</a>
+            <div id="accountIdPanel" style="display: none;">
+                <p><strong>Account ID:</strong> <a id="accountId" href="/account"></a></p>
+                <p><em>Save this somewhere!</em></p>
+            </div>
+        </li>
     </ol>
 </div>
 </body>

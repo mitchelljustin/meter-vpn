@@ -5,6 +5,7 @@
   "license": "MIT",
   "dependencies": {
     "base32": "^0.0.6",
+    "jquery": "^3.3.1",
     "jszip": "^3.2.0",
     "tweetnacl": "^1.0.1"
   }
