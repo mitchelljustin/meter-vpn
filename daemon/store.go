@@ -32,7 +32,3 @@ func (p *PeerStore) FindPeer(accountId string) (*Peer, error) {
 	}
 	return &peer, nil
 }
-
-func (p *PeerStore) CreateNewPeer() Peer {
-
-}

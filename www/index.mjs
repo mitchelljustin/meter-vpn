@@ -1,3 +1,7 @@
+import * as base32 from "base32"
+import * as nacl from "tweetnacl"
+import JSZip from "jszip"
+
 function toHexString(byteArray) {
     return Array.prototype.map.call(byteArray, function (byte) {
         return ('0' + (byte & 0xFF).toString(16)).slice(-2);
@@ -16,6 +20,10 @@ function toBase64(buffer) {
 
 $(document).ready(async () => {
     const creds = nacl.box.keyPair()
+    const accountIdBytes = new Uint8Array(10)
+    crypto.getRandomValues(accountIdBytes)
+    const accountId = base32.encode(accountIdBytes)
+    console.log(accountId)
     let pubKeyHex = toHexString(creds.publicKey);
     $("#pubkey").text(pubKeyHex)
     const config = await generateConfigZip(creds)

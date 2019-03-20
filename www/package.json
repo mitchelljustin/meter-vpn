@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "base32": "^0.0.6",
     "jszip": "^3.2.0",
     "tweetnacl": "^1.0.1"
   }
