@@ -54,45 +54,51 @@ func (w *Watchman) Tick() {
 		return
 	}
 
-	peers, err := w.Store.GetConnectedPeers()
-	if err != nil {
-		w.Report("Error getting connected peers: %v", err)
+	var disconnectedPeers, connectedPeers []Peer
+	if connectedPeers, err = w.Store.GetPeers(true); err != nil {
+		w.Report("Error getting connectedPeers: %v", err)
 		return
 	}
-	for _, peer := range peers {
-		w.Report("Checking %v (expiry %v)", peer.AccountID, peer.ExpiryDate)
-		if now.After(peer.ExpiryDate) {
-			w.Report("Peer %v is out of allowance", peer.AccountID)
-			err := w.DisconnectPeer(&peer)
-			if err != nil {
-				w.Report("ERROR: Could not disconnect peer, %v", err)
-			}
-		} else {
-			if device == nil {
-				w.Report("Device not found, skipping devicePeer connection")
-				continue
-			}
-			key, err := KeyFromBase64(*peer.PublicKeyB64)
-			if err != nil {
-				w.Report("ERROR: %v", err)
-				continue
-			}
-			found := false
-			for _, devicePeer := range device.Peers {
-				if devicePeer.PublicKey == *key {
-					found = true
-					break
-				}
-			}
-			if !found {
-				err := w.ConnectPeer(&peer)
-				if err != nil {
-					w.Report("ERROR: Could not connect devicePeer, %v", err)
-				}
-			}
+	if disconnectedPeers, err = w.Store.GetPeers(false); err != nil {
+		w.Report("Error getting disconnectedPeers: %v", err)
+		return
+	}
+	for _, peer := range connectedPeers {
+		w.Report("Checking connected peer %v (expiry %v)", peer.AccountID, peer.ExpiryDate)
+		if now.Before(peer.ExpiryDate) {
+			continue
+		}
+		w.Report("Peer %v is out of allowance", peer.AccountID)
+		err := w.DisconnectPeer(&peer)
+		if err != nil {
+			w.Report("ERROR: Could not disconnect peer, %v", err)
 		}
 		if err := w.Store.SavePeer(&peer); err != nil {
 			w.Report("ERROR saving peer: %v", err)
+		}
+	}
+	for _, peer := range disconnectedPeers {
+		w.Report("Checking disconnected peer %v (expiry %v)", peer.AccountID, peer.ExpiryDate)
+		if now.After(peer.ExpiryDate) {
+			continue
+		}
+		key, err := KeyFromBase64(*peer.PublicKeyB64)
+		if err != nil {
+			w.Report("ERROR: %v", err)
+			continue
+		}
+		found := false
+		for _, devicePeer := range device.Peers {
+			if devicePeer.PublicKey == *key {
+				found = true
+				break
+			}
+		}
+		if !found {
+			err := w.ConnectPeer(&peer)
+			if err != nil {
+				w.Report("ERROR: Could not connect devicePeer, %v", err)
+			}
 		}
 	}
 }

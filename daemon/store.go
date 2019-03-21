@@ -34,7 +34,7 @@ type PeerStore interface {
 	GetPeer(accountId string) (*Peer, error)
 	SavePeer(peer *Peer) error
 
-	GetConnectedPeers() ([]Peer, error)
+	GetPeers(connected bool) ([]Peer, error)
 	GetNewIPs() ([2]net.IP, error)
 }
 
@@ -75,9 +75,13 @@ func (store *SQLitePeerStore) SavePeer(peer *Peer) error {
 	return store.DB.Save(peer).Error
 }
 
-func (store *SQLitePeerStore) GetConnectedPeers() ([]Peer, error) {
+func (store *SQLitePeerStore) GetPeers(connected bool) ([]Peer, error) {
 	var peers []Peer
-	if err := store.DB.Find(&peers, Peer{Connected: true}).Error; err != nil {
+	if err := store.DB.
+		Where("publicKeyB64 is not null").
+		Where(Peer{Connected: connected}).
+		Find(&peers).
+		Error; err != nil {
 		return nil, err
 	}
 	return peers, nil
