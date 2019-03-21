@@ -2,6 +2,7 @@ package daemon
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/lightningnetwork/lnd/lnrpc"
@@ -67,12 +68,8 @@ type ExtensionJSON struct {
 	Duration string `json:"duration"`
 }
 
-type VPNConfigJSON struct {
-	PublicKey string `json:"publicKey"`
-	IP        struct {
-		V4 string
-		V6 string
-	}
+type SetPubkeyJSON struct {
+	PublicKey string
 }
 
 func respondBadRequest(ctx *gin.Context, err error) {
@@ -81,6 +78,23 @@ func respondBadRequest(ctx *gin.Context, err error) {
 
 func respondServerError(ctx *gin.Context, err error) {
 	ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+}
+
+func (tb *TollBooth) loadPeerFromCookie(ctx *gin.Context) (*Peer, bool) {
+	accountId, err := ctx.Cookie("accountId")
+	if err != nil {
+		respondServerError(ctx, err)
+		return nil, false
+	}
+	peer, err := tb.store.GetPeer(accountId)
+	if err == ErrPeerNotFound {
+		ctx.Status(404)
+		return nil, false
+	} else if err != nil {
+		respondServerError(ctx, err)
+		return nil, false
+	}
+	return peer, true
 }
 
 func (tb *TollBooth) Run() {
@@ -119,19 +133,13 @@ func (tb *TollBooth) Run() {
 }
 
 func (tb *TollBooth) HandleExtensionRequest(ctx *gin.Context) {
+	peer, ok := tb.loadPeerFromCookie(ctx)
+	if !ok {
+		return
+	}
 	var extension ExtensionJSON
 	if err := ctx.BindJSON(&extension); err != nil {
 		respondBadRequest(ctx, err)
-		return
-	}
-	accountId := ctx.Param("accountId")
-	peer, err := tb.store.GetPeer(accountId)
-	if err != nil {
-		respondServerError(ctx, err)
-		return
-	}
-	if peer == nil {
-		ctx.Status(404)
 		return
 	}
 	duration, err := time.ParseDuration(fmt.Sprintf("%vs", extension.Duration))
@@ -151,14 +159,18 @@ func (tb *TollBooth) HandleExtensionRequest(ctx *gin.Context) {
 	}
 	payReq := resp.PaymentRequest
 	tb.pendingInvoices[payReq] = pendingExtension{
-		AccountID: accountId,
+		AccountID: peer.AccountID,
 		Duration:  duration,
 	}
 	ctx.String(402, payReq)
 }
 
 func (tb *TollBooth) HandleGetPeerRequest(ctx *gin.Context) {
-	accountId := ctx.Param("accountId")
+	accountId, err := ctx.Cookie("accountId")
+	if err != nil {
+		respondServerError(ctx, err)
+		return
+	}
 	peer, err := tb.store.GetPeer(accountId)
 	if err == ErrPeerNotFound {
 		ctx.Status(404)
@@ -201,12 +213,57 @@ func (tb *TollBooth) HandleCreatePeerRequest(ctx *gin.Context) {
 	ctx.JSON(200, PeerToJSON(peer))
 }
 
-func (tb *TollBooth) HandleSetConfigRequest(ctx *gin.Context) {
-	var config VPNConfigJSON
+func (tb *TollBooth) HandleSetPubkeyRequest(ctx *gin.Context) {
+	peer, ok := tb.loadPeerFromCookie(ctx)
+	if !ok {
+		return
+	}
+	var config SetPubkeyJSON
 	if err := ctx.ShouldBindJSON(&config); err != nil {
 		respondBadRequest(ctx, err)
 		return
 	}
-	// TODO
+	if config.PublicKey == "" {
+		respondBadRequest(ctx, errors.New("must set publicKey and ip.v4"))
+		return
+	}
+	if _, err := KeyFromBase64(config.PublicKey); err != nil {
+		respondBadRequest(ctx, err)
+		return
+	}
+
+	peer.PublicKeyB64 = &config.PublicKey
+	if err := tb.store.SavePeer(peer); err != nil {
+		respondServerError(ctx, err)
+		return
+	}
 	ctx.Status(200)
+}
+
+func (tb *TollBooth) HandleIPRequest(ctx *gin.Context) {
+	peer, ok := tb.loadPeerFromCookie(ctx)
+	if !ok {
+		return
+	}
+	if peer.IPv4 == nil {
+		ips, err := tb.store.GetNewIPs()
+		if err != nil {
+			respondServerError(ctx, err)
+			return
+		}
+		peer.IPv4 = &ips[0]
+		peer.IPv6 = &ips[1]
+		if err := tb.store.SavePeer(peer); err != nil {
+			respondServerError(ctx, err)
+			return
+		}
+	}
+	ipv6Str := ""
+	if peer.IPv6 != nil && *peer.IPv6 != nil {
+		ipv6Str = peer.IPv6.String()
+	}
+	ctx.JSON(200, gin.H{
+		"ipv4": peer.IPv4.String(),
+		"ipv6": ipv6Str,
+	})
 }

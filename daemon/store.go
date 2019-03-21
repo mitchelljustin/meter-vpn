@@ -8,6 +8,7 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/mdlayher/wireguardctrl/wgtypes"
+	"math/big"
 	"net"
 	"time"
 )
@@ -34,6 +35,7 @@ type PeerStore interface {
 	SavePeer(peer *Peer) error
 
 	GetConnectedPeers() ([]Peer, error)
+	GetNewIPs() ([2]net.IP, error)
 }
 
 type SQLitePeerStore struct {
@@ -92,4 +94,36 @@ func KeyFromBase64(keyBase64 string) (*wgtypes.Key, error) {
 	}
 	key, err := wgtypes.NewKey(keyBytes)
 	return &key, err
+}
+
+func ipToBigInt(ip net.IP) *big.Int {
+	x := big.Int{}
+	x.SetBytes([]byte(ip))
+	return &x
+}
+
+func (store *SQLitePeerStore) GetNewIPs() (ips [2]net.IP, err error) {
+	ips[0] = nil
+	ips[1] = nil // TODO: ipv6
+	var lastPeer Peer
+	err = store.DB.
+		Where("ipv4 is not null").
+		Order("ipv4 asc").
+		Last(&lastPeer).
+		Error
+	if err == gorm.ErrRecordNotFound {
+		ips[0] = net.ParseIP("10.0.0.2").To4()
+		err = nil
+		return
+	} else if err != nil {
+		return
+	}
+	ipAsInt := ipToBigInt(*lastPeer.IPv4)
+	ipAsInt.Add(ipAsInt, big.NewInt(1))
+	ips[0] = ipAsInt.Bytes()
+	if ipAsInt.Cmp(ipToBigInt(net.ParseIP("10.255.255.254"))) == 0 {
+		err = errors.New("exhausted IPv4 space")
+		return
+	}
+	return
 }

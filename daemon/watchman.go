@@ -99,23 +99,26 @@ func (w *Watchman) Tick() {
 
 func (w *Watchman) ConnectPeer(peer *Peer) error {
 	w.Report("Connecting peer: %v", peer.PublicKeyB64)
-	ipv4 := net.IPNet{
-		IP:   *peer.IPv4,
-		Mask: net.CIDRMask(32, 32),
-	}
-	ipv6 := net.IPNet{
-		IP:   *peer.IPv6,
-		Mask: net.CIDRMask(128, 128),
-	}
 	key, err := KeyFromBase64(*peer.PublicKeyB64)
 	if err != nil {
 		return err
+	}
+	var allowedIPs []net.IPNet
+	allowedIPs = append(allowedIPs, net.IPNet{
+		IP:   *peer.IPv4,
+		Mask: net.CIDRMask(32, 32),
+	})
+	if peer.IPv6 != nil {
+		allowedIPs = append(allowedIPs, net.IPNet{
+			IP:   *peer.IPv6,
+			Mask: net.CIDRMask(128, 128),
+		})
 	}
 	if err := w.wireGuard.ConfigureDevice(WireguardDeviceName, wgtypes.Config{
 		Peers: []wgtypes.PeerConfig{
 			{
 				PublicKey:  *key,
-				AllowedIPs: []net.IPNet{ipv4, ipv6},
+				AllowedIPs: allowedIPs,
 			},
 		},
 	}); err != nil {

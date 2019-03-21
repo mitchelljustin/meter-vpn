@@ -33,8 +33,8 @@ function numberWithCommas(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
-async function refreshDuration(accountId) {
-    const {expiryDate: expiry} = await $.getJSON(`/peer/${accountId}`)
+async function refreshDuration() {
+    const {expiryDate: expiry} = await $.getJSON(`/peer`)
     const expiryDate = new Date(expiry).getTime()
     const now = new Date().getTime()
     const delta = (expiryDate - now) / 1000
@@ -47,6 +47,11 @@ async function refreshDuration(accountId) {
 }
 
 $(document).ready(async () => {
+    const payReqQrCode = new QRCode(document.getElementById("payReqQR"), {
+        width: 192,
+        height: 192,
+    })
+
     const $durationSelect = $("#durationSelect");
 
     const accountId = Cookies.get("accountId")
@@ -55,16 +60,20 @@ $(document).ready(async () => {
         const duration = String(3600 * parseInt($durationSelect.val()))
         try {
             await $.ajax({
-                url: `/peer/${accountId}/extend`,
+                url: `/peer/extend`,
                 type: "POST",
                 dataType: "json",
                 data: JSON.stringify({duration}),
             })
         } catch (e) {
             const payReq = e.responseText;
+            const payReqUrl = `lightning:${payReq}`
             const $payReqStr = $("#payReqStr");
             $payReqStr.text("")
-            $payReqStr.append(`<a href="lightning:${payReq}">${payReq}</a>`)
+            $payReqStr.append(`<a href="${payReqUrl}">${payReq}</a>`)
+            payReqQrCode.clear()
+            payReqQrCode.makeCode(payReqUrl)
+
         }
     })
 
@@ -80,6 +89,6 @@ $(document).ready(async () => {
         $("#satCost").text(numberWithCommas(sats))
         $("#usdCost").text(`$${usd.toFixed(4)}`)
     })
-    await refreshDuration(accountId)
+    await refreshDuration()
     setTimeout(refreshDuration, 1000 * 60)
 })
