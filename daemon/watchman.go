@@ -74,13 +74,11 @@ func (w *Watchman) Tick() {
 			if err := w.ConnectPeer(&peer); err != nil {
 				w.Report("Could not connect peer: %v", err)
 			}
-			continue
 		}
 		if now.After(peer.ExpiryDate) && connectedToWg[*key] {
 			if err := w.DisconnectPeer(&peer); err != nil {
 				w.Report("Could not disconnect peer: %v", err)
 			}
-			continue
 		}
 	}
 }
