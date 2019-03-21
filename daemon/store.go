@@ -78,7 +78,7 @@ func (store *SQLitePeerStore) SavePeer(peer *Peer) error {
 func (store *SQLitePeerStore) GetPeers(connected bool) ([]Peer, error) {
 	var peers []Peer
 	if err := store.DB.
-		Where("publicKeyB64 is not null").
+		Where("public_key_b64 is not null").
 		Where(Peer{Connected: connected}).
 		Find(&peers).
 		Error; err != nil {
