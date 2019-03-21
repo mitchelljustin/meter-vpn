@@ -27,15 +27,3 @@ $(document).ready(async () => {
         Cookies.set("accountId", accountId)
     })
 })
-
-const configTemplate = (secretKey, ipv4, ipv6) => `\
-[Interface]
-PrivateKey = ${secretKey}
-Address = ${ipv4}/32, ${ipv6}/128
-DNS = 1.1.1.1
-
-[Peer]
-PublicKey = 1t54yXxhTvUHqQE1Wh0nKqieksYm5o/KlpfQI5QUX2I=
-AllowedIPs = 0.0.0.0/0
-Endpoint = 159.89.121.214:52800
-`

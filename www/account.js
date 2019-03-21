@@ -16,8 +16,8 @@ function hexStringToByte(str) {
     }
 
     var a = [];
-    for (var i = 0, len = str.length; i < len; i+=2) {
-        a.push(parseInt(str.substr(i,2),16));
+    for (var i = 0, len = str.length; i < len; i += 2) {
+        a.push(parseInt(str.substr(i, 2), 16));
     }
 
     return new Uint8Array(a);
@@ -47,10 +47,13 @@ async function refreshDuration() {
 }
 
 $(document).ready(async () => {
-    const payReqQrCode = new QRCode(document.getElementById("payReqQR"), {
-        width: 192,
-        height: 192,
-    })
+    const payReqQrCode = new QRCode(
+        document.getElementById("payReqQR"),
+        {
+            width: 192,
+            height: 192,
+        },
+    )
 
     const $durationSelect = $("#durationSelect");
 
@@ -91,4 +94,36 @@ $(document).ready(async () => {
     })
     await refreshDuration()
     setTimeout(refreshDuration, 1000 * 60)
+
+    $("#genWireGuardConfig").click(async () => {
+        const {publicKey, secretKey} = nacl.box.keyPair()
+        await $.ajax({
+            type: "POST",
+            url: "/peer/pubkey",
+            data: JSON.stringify({
+                publicKey: toBase64(publicKey),
+            }),
+            dataType: "json",
+        })
+        const zip = new JSZip()
+        const {ipv4} = await $.getJSON("/peer/ip")
+        zip.file(`metervpn-toronto-ca-${accountId}.conf`, configTemplateIPv4({
+            secretKey: toBase64(secretKey),
+            ipv4,
+        }))
+        const blob = await zip.generateAsync({type: "blob"})
+        saveAs(blob, "wireguard-config.zip")
+    })
 })
+
+const configTemplateIPv4 = ({secretKey, ipv4}) => `\
+[Interface]
+PrivateKey = ${secretKey}
+Address = ${ipv4}/32
+DNS = 1.1.1.1
+
+[Peer]
+PublicKey = 1t54yXxhTvUHqQE1Wh0nKqieksYm5o/KlpfQI5QUX2I=
+AllowedIPs = 0.0.0.0/0
+Endpoint = 159.89.121.214:52800
+`

@@ -2,7 +2,6 @@ package daemon
 
 import (
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/lightningnetwork/lnd/lnrpc"
@@ -69,7 +68,7 @@ type ExtensionJSON struct {
 }
 
 type SetPubkeyJSON struct {
-	PublicKey string
+	PublicKey string `json:"publicKey"`
 }
 
 func respondBadRequest(ctx *gin.Context, err error) {
@@ -223,21 +222,16 @@ func (tb *TollBooth) HandleSetPubkeyRequest(ctx *gin.Context) {
 		respondBadRequest(ctx, err)
 		return
 	}
-	if config.PublicKey == "" {
-		respondBadRequest(ctx, errors.New("must set publicKey and ip.v4"))
-		return
-	}
 	if _, err := KeyFromBase64(config.PublicKey); err != nil {
 		respondBadRequest(ctx, err)
 		return
 	}
-
 	peer.PublicKeyB64 = &config.PublicKey
 	if err := tb.store.SavePeer(peer); err != nil {
 		respondServerError(ctx, err)
 		return
 	}
-	ctx.Status(200)
+	ctx.JSON(200, nil)
 }
 
 func (tb *TollBooth) HandleIPRequest(ctx *gin.Context) {
