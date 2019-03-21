@@ -22,7 +22,6 @@ type Peer struct {
 	PublicKeyB64 *string `gorm:"unique_index"`
 	IPv4         *net.IP
 	IPv6         *net.IP
-	Connected    bool
 }
 
 var ErrPeerNotFound = errors.New("peer not found")
@@ -34,7 +33,7 @@ type PeerStore interface {
 	GetPeer(accountId string) (*Peer, error)
 	SavePeer(peer *Peer) error
 
-	GetPeers(connected bool) ([]Peer, error)
+	GetPeersWithKey() ([]Peer, error)
 	GetNewIPs() ([2]net.IP, error)
 }
 
@@ -75,11 +74,10 @@ func (store *SQLitePeerStore) SavePeer(peer *Peer) error {
 	return store.DB.Save(peer).Error
 }
 
-func (store *SQLitePeerStore) GetPeers(connected bool) ([]Peer, error) {
+func (store *SQLitePeerStore) GetPeersWithKey() ([]Peer, error) {
 	var peers []Peer
 	if err := store.DB.
 		Where("public_key_b64 is not null").
-		Where(Peer{Connected: connected}).
 		Find(&peers).
 		Error; err != nil {
 		return nil, err

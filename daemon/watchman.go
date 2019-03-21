@@ -54,57 +54,39 @@ func (w *Watchman) Tick() {
 		return
 	}
 
-	var disconnectedPeers, connectedPeers []Peer
-	if connectedPeers, err = w.Store.GetPeers(true); err != nil {
-		w.Report("Error getting connectedPeers: %v", err)
+	connectedToWg := make(map[wgtypes.Key]bool)
+	for _, devicePeer := range device.Peers {
+		connectedToWg[devicePeer.PublicKey] = true
+	}
+
+	var peers []Peer
+	if peers, err = w.Store.GetPeersWithKey(); err != nil {
+		w.Report("Error getting peers: %v", err)
 		return
 	}
-	if disconnectedPeers, err = w.Store.GetPeers(false); err != nil {
-		w.Report("Error getting disconnectedPeers: %v", err)
-		return
-	}
-	for _, peer := range connectedPeers {
-		w.Report("Checking connected peer %v (expiry %v)", peer.AccountID, peer.ExpiryDate)
-		if now.Before(peer.ExpiryDate) {
-			continue
-		}
-		w.Report("Peer %v is out of allowance", peer.AccountID)
-		err := w.DisconnectPeer(&peer)
-		if err != nil {
-			w.Report("ERROR: Could not disconnect peer, %v", err)
-		}
-		if err := w.Store.SavePeer(&peer); err != nil {
-			w.Report("ERROR saving peer: %v", err)
-		}
-	}
-	for _, peer := range disconnectedPeers {
-		w.Report("Checking disconnected peer %v (expiry %v)", peer.AccountID, peer.ExpiryDate)
-		if now.After(peer.ExpiryDate) {
-			continue
-		}
+	for _, peer := range peers {
+		w.Report("Checking peer %v (expiry %v)", peer.AccountID, peer.ExpiryDate)
 		key, err := KeyFromBase64(*peer.PublicKeyB64)
 		if err != nil {
 			w.Report("ERROR: %v", err)
+		}
+		if now.Before(peer.ExpiryDate) && !connectedToWg[*key] {
+			if err := w.ConnectPeer(&peer); err != nil {
+				w.Report("Could not connect peer: %v", err)
+			}
 			continue
 		}
-		found := false
-		for _, devicePeer := range device.Peers {
-			if devicePeer.PublicKey == *key {
-				found = true
-				break
+		if now.After(peer.ExpiryDate) && connectedToWg[*key] {
+			if err := w.DisconnectPeer(&peer); err != nil {
+				w.Report("Could not disconnect peer: %v", err)
 			}
-		}
-		if !found {
-			err := w.ConnectPeer(&peer)
-			if err != nil {
-				w.Report("ERROR: Could not connect devicePeer, %v", err)
-			}
+			continue
 		}
 	}
 }
 
 func (w *Watchman) ConnectPeer(peer *Peer) error {
-	w.Report("Connecting peer: %v", peer.PublicKeyB64)
+	w.Report("Connecting peer: %v", peer.AccountID)
 	key, err := KeyFromBase64(*peer.PublicKeyB64)
 	if err != nil {
 		return err
@@ -130,12 +112,11 @@ func (w *Watchman) ConnectPeer(peer *Peer) error {
 	}); err != nil {
 		return err
 	}
-	peer.Connected = true
 	return nil
 }
 
 func (w *Watchman) DisconnectPeer(peer *Peer) error {
-	w.Report("Disconnecting peer: %v", peer.PublicKeyB64)
+	w.Report("Disconnecting peer: %v", peer.AccountID)
 	key, err := KeyFromBase64(*peer.PublicKeyB64)
 	if err != nil {
 		return err
@@ -150,6 +131,5 @@ func (w *Watchman) DisconnectPeer(peer *Peer) error {
 	}); err != nil {
 		return err
 	}
-	peer.Connected = false
 	return nil
 }
