@@ -119,6 +119,7 @@ func (tb *TollBooth) Run() {
 		if extension, ok = tb.pendingInvoices[payReq]; !ok {
 			continue
 		}
+		log.Printf("Adding %v of VPN time to %v", extension.Duration, extension.AccountID)
 		peer, err := tb.store.GetPeer(extension.AccountID)
 		if err != nil {
 			continue
