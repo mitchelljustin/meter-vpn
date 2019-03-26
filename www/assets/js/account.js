@@ -54,9 +54,12 @@ $(document).ready(async () => {
         if (isNaN(hours)) {
             hours = 0
         }
-        const sats = Math.ceil(SATOSHI_PER_HOUR * hours)
+        const prices = await $.getJSON("/price")
+        const satsPerHour = parseFloat(prices.satoshi.hour)
+        const usdPerHour = parseFloat(prices.usd.hour)
+        const sats = Math.ceil(satsPerHour * hours)
         const btc = sats / 1e8
-        const usd = await convertToUsd(btc)
+        const usd = usdPerHour * hours
         $("#btcCost").text(btc.toFixed(8))
         $("#satCost").text(numberWithCommas(sats))
         $("#usdCost").text(`$${usd.toFixed(4)}`)
