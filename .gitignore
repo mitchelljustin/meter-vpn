@@ -20,4 +20,4 @@ vendor/
 secret/
 data/
 bin/
-*/node_modules/
+node_modules/

@@ -10,19 +10,6 @@ function toBase64(buffer) {
     return window.btoa(binary);
 }
 
-function hexStringToByte(str) {
-    if (!str) {
-        return new Uint8Array();
-    }
-
-    var a = [];
-    for (var i = 0, len = str.length; i < len; i += 2) {
-        a.push(parseInt(str.substr(i, 2), 16));
-    }
-
-    return new Uint8Array(a);
-}
-
 async function convertToUsd(btc) {
     const data = await $.getJSON("https://api.coindesk.com/v1/bpi/currentprice/USD.json")
     const usdPrice = data.bpi.USD.rate_float

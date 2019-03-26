@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"github.com/mvanderh/meter-vpn/daemon"
@@ -60,10 +61,7 @@ func startGinServer(booth *daemon.TollBooth, port int) {
 	router.POST("/peer/pubkey", booth.HandleSetPubkeyRequest)
 	router.POST("/peer/extend", booth.HandleExtensionRequest)
 
-	router.Static("/static", "./www")
-	router.GET("/", func(ctx *gin.Context) {
-		ctx.File("./www/index.html")
-	})
+	router.Use(static.ServeRoot("/", "./www"))
 	router.GET("/account", func(ctx *gin.Context) {
 		ctx.File("./www/account.html")
 	})

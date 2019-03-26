@@ -104,6 +104,8 @@ func ipToBigInt(ip net.IP) *big.Int {
 	return &x
 }
 
+var lastIpAddr = net.ParseIP("10.255.255.254").To4()
+
 func (store *SQLitePeerStore) GetNewIPs() (ips [2]net.IP, err error) {
 	ips[0] = nil
 	ips[1] = nil // TODO: ipv6
@@ -123,7 +125,7 @@ func (store *SQLitePeerStore) GetNewIPs() (ips [2]net.IP, err error) {
 	ipAsInt := ipToBigInt(*lastPeer.IPv4)
 	ipAsInt.Add(ipAsInt, big.NewInt(1))
 	ips[0] = ipAsInt.Bytes()
-	if ipAsInt.Cmp(ipToBigInt(net.ParseIP("10.255.255.254"))) == 0 {
+	if ipAsInt.Cmp(ipToBigInt(lastIpAddr)) == 0 {
 		err = errors.New("exhausted IPv4 space")
 		return
 	}

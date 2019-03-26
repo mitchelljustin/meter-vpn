@@ -7,35 +7,91 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
           integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
           crossorigin="anonymous">
+    <link rel="stylesheet" href="global_style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <script>
+        document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] +
+            ':35729/livereload.js?snipver=1"></' + 'script>')
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
-    <script src="/static/node_modules/jquery/dist/jquery.min.js"></script>
-    <script src="/static/node_modules/jszip/dist/jszip.min.js"></script>
-    <script src="/static/node_modules/tweetnacl/nacl-fast.min.js"></script>
-    <script src="/static/index.js"></script>
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="https://unpkg.com/popper.js/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+            crossorigin="anonymous"></script>
+    <script src="node_modules/jszip/dist/jszip.min.js"></script>
+    <script src="node_modules/tweetnacl/nacl-fast.min.js"></script>
+    <script src="index.js"></script>
 </head>
 
 <body>
-<nav class="nav m-3">
-    <a class="nav-link text-dark" href="/">Get MeterVPN</a>
-    <a class="nav-link text-dark ml-auto" href="/topUp">Top Up</a>
-    <a class="nav-link text-dark" href="/">FAQ</a>
-    <a class="nav-link text-dark" href="/">About</a>
+<nav class="nav">
+    <a class="nav-link" href="/">MeterVPN</a>
+    <a class="nav-link ml-auto" href="account.html">Create Account</a>
+    <a class="nav-link" href="faq.html">FAQ</a>
+    <a class="nav-link" href="about.html">About</a>
 </nav>
-<h1 class="text-center m-5">Get MeterVPN</h1>
-<div class="container w-50 mx-auto border rounded border-primary p-4">
-    <ol>
-        <li class="p-3">
-            Install <a href="https://www.wireguard.com/install/">WireGuard</a>.
-        </li>
-        <li class="p-3">
-            <a id="createNewAccount" href="#">Create new account</a>
-            <div id="accountIdPanel" style="display: none;">
-                <p><strong>Account ID:</strong> <a id="accountId" href="/account"></a></p>
-                <p><em>Save this somewhere!</em></p>
-            </div>
-        </li>
-    </ol>
+<div class="container">
+    <div class="row my-5"></div>
+    <div class="row">
+        <div class="col-8">
+            <h1>
+                MeterVPN
+                <small class="ml-3">Pay-as-you-go Internet privacy</small>
+            </h1>
+            <h5>
+                ⚡ Pay for VPN service with Bitcoin Lightning micropayments.
+            </h5>
+            <div class="mt-4"></div>
+            <p>
+                <span class="text-white-50">
+                    ️ Current price for 24 hours of VPN time:
+                </span>
+                <span class="text-gold" data-toggle="tooltip" data-placement="bottom"
+                      title="100 millionths of a Bitcoin">
+                    2,540 sat
+                </span>
+                <span class="text-white-50">(0.00002540 BTC, $0.09973 USD)</span>
+            </p>
+            <a class="btn btn-success">Get Account</a>
+        </div>
+        <div class="col">
+            <img src="assets/metervpn-small.png" alt="">
+        </div>
+    </div>
+    <div class="row py-3">
+        <div class="col">
+            <h3>
+                Protect yourself against tracking and censorship.
+            </h3>
+            <p>
+                We don't keep logs. We use the WireGuard VPN protocol for fast reconnection and strong encryption.
+            </p>
+        </div>
+    </div>
+    <div class="row py-3">
+        <div class="col text-right">
+            <h3>
+                Pay only for the time you need. No monthly subscription.
+            </h3>
+            <p>
+                With MeterVPN, you can pay only for the hour you want to watch a Netflix show available in another
+                country.
+            </p>
+        </div>
+    </div>
+    <div class="row py-3">
+        <div class="col">
+            <h3>No email, no username.</h3>
+            <p>
+                All that identifies you is an Account ID which is generated randomly. Lightning payments are also
+                anonymous.
+            </p>
+
+        </div>
+    </div>
 </div>
 </body>
+</div>
 
 </html>
