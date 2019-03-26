@@ -21,6 +21,7 @@
             crossorigin="anonymous"></script>
     <script src="node_modules/jszip/dist/jszip.min.js"></script>
     <script src="node_modules/tweetnacl/nacl-fast.min.js"></script>
+    <script src="common.js"></script>
     <script src="index.js"></script>
 </head>
 
@@ -39,19 +40,22 @@
                 MeterVPN
                 <small class="ml-3">Pay-as-you-go Internet privacy</small>
             </h1>
-            <h5>
-                ⚡ Pay for VPN service with Bitcoin Lightning micropayments.
-            </h5>
             <div class="mt-4"></div>
+            <h5>
+                Pay for VPN service with Bitcoin Lightning micropayments ⚡
+            </h5>
             <p>
                 <span class="text-white-50">
-                    ️ Current price for 24 hours of VPN time:
+                    ️ Current price for 24 hours of VPN service:
                 </span>
                 <span class="text-gold" data-toggle="tooltip" data-placement="bottom"
                       title="100 millionths of a Bitcoin">
-                    2,540 sat
+                    <span id="24hPriceSats">~</span> sat
                 </span>
-                <span class="text-white-50">(0.00002540 BTC, $0.09973 USD)</span>
+                <span class="text-white-50">
+                    ($<span id="24hPriceUsd">~</span>
+                    USD)
+                </span>
             </p>
             <a class="btn btn-success">Get Account</a>
         </div>
@@ -84,7 +88,7 @@
         <div class="col">
             <h3>No email, no username.</h3>
             <p>
-                All that identifies you is an Account ID which is generated randomly. Lightning payments are also
+                All that identifies you is an Account ID, which is generated randomly. Lightning payments are also
                 anonymous.
             </p>
 

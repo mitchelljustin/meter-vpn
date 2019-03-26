@@ -1,15 +1,7 @@
 $(document).ready(async () => {
     $('[data-toggle="tooltip"]').tooltip()
 
-    const $accountId = $("#accountId");
-    $("#createNewAccount").click(async (e) => {
-        e.stopPropagation()
-        if ($accountId.text().trim() !== "") {
-            return
-        }
-        const {accountId} = await $.post("/peer")
-        $("#accountIdPanel").show()
-        $accountId.text(accountId)
-        Cookies.set("accountId", accountId)
-    })
+    const prices = await $.getJSON("/price")
+    $("#24hPriceSats").text(prices.satoshi.day.split(".")[0])
+    $("#24hPriceUsd").text(prices.usd.day)
 })

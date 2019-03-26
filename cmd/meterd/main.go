@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/gin-contrib/static"
@@ -8,6 +9,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/mvanderh/meter-vpn/daemon"
 	"log"
+	"net/http"
 	"time"
 )
 
@@ -52,8 +54,65 @@ func main() {
 	startGinServer(booth, *port)
 }
 
+const (
+	MonthlyCostUSD = 4.00
+	DailyCostUSD   = MonthlyCostUSD / 30.5
+	HourlyCostUSD  = DailyCostUSD / 24
+)
+
+type coindeskCurrentPrice struct {
+	Bpi struct {
+		USD struct {
+			RateFloat float64 `json:"rate_float"`
+		} `json:"USD"`
+	}
+}
+
+func costToSatoshi(costInUsd, rate float64) string {
+	return fmt.Sprintf("%.3f", costInUsd/rate*1e8)
+}
+
+func costToUsd(costInUsd float64) string {
+	return fmt.Sprintf("%.5f", costInUsd)
+}
+
+func priceHandler() func(ctx *gin.Context) {
+	lastBtcPrice := 3936.6467
+
+	return func(ctx *gin.Context) {
+		resp, err := http.Get("https://api.coindesk.com/v1/bpi/currentprice/USD.json")
+		rate := lastBtcPrice
+		if err == nil {
+			defer resp.Body.Close()
+			var curPrice coindeskCurrentPrice
+			if err := json.NewDecoder(resp.Body).Decode(&curPrice); err == nil {
+				rate = curPrice.Bpi.USD.RateFloat
+				lastBtcPrice = rate
+			} else {
+				log.Printf("Error decoding JSON: %v", err)
+			}
+		} else {
+			log.Printf("Error getting price: %v", err)
+		}
+		ctx.JSON(200, gin.H{
+			"satoshi": gin.H{
+				"month": costToSatoshi(MonthlyCostUSD, rate),
+				"day":   costToSatoshi(DailyCostUSD, rate),
+				"hour":  costToSatoshi(HourlyCostUSD, rate),
+			},
+			"usd": gin.H{
+				"month": costToUsd(MonthlyCostUSD),
+				"day":   costToUsd(DailyCostUSD),
+				"hour":  costToUsd(HourlyCostUSD),
+			},
+		})
+	}
+}
+
 func startGinServer(booth *daemon.TollBooth, port int) {
 	router := gin.Default()
+
+	router.GET("/price", priceHandler())
 
 	router.POST("/peer", booth.HandleCreatePeerRequest)
 	router.GET("/peer", booth.HandleGetPeerRequest)
