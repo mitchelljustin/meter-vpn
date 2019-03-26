@@ -3,6 +3,11 @@ body {
     color: #f0eae4;
 }
 
+.content {
+    background: #223140;
+    border: #10171e 1px solid;
+}
+
 small {
     color: rgba(255, 255, 255, 0.5) ;
 }
