@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/foolin/gin-template"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -112,6 +113,13 @@ func priceHandler() func(ctx *gin.Context) {
 func startGinServer(booth *daemon.TollBooth, port int) {
 	router := gin.Default()
 
+	router.HTMLRender = gintemplate.New(gintemplate.TemplateConfig{
+		Root:         "www/views",
+		Extension:    ".hbs",
+		Master:       "layouts/master",
+		DisableCache: true,
+	})
+
 	router.GET("/price", priceHandler())
 
 	router.POST("/peer", booth.HandleCreatePeerRequest)
@@ -120,10 +128,16 @@ func startGinServer(booth *daemon.TollBooth, port int) {
 	router.POST("/peer/pubkey", booth.HandleSetPubkeyRequest)
 	router.POST("/peer/extend", booth.HandleExtensionRequest)
 
-	router.Use(static.ServeRoot("/", "./www"))
-	router.GET("/account", func(ctx *gin.Context) {
-		ctx.File("./www/account.html")
+	router.GET("/", func(ctx *gin.Context) {
+		ctx.HTML(http.StatusOK, "index", nil)
 	})
+	router.GET("/account", func(ctx *gin.Context) {
+		ctx.HTML(http.StatusOK, "account", nil)
+	})
+	router.GET("/create-account", func(ctx *gin.Context) {
+		ctx.HTML(http.StatusOK, "createAccount", nil)
+	})
+	router.Use(static.ServeRoot("/", "./www"))
 
 	addr := fmt.Sprintf(":%v", port)
 	log.Printf("Server running at %v", addr)

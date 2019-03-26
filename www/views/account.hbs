@@ -1,0 +1,86 @@
+{{define "content"}}
+<script src="assets/js/account.js"></script>
+<div class="row">
+    <div class="col-md-4">
+        <h3>Top Up Terminal</h3>
+        <p>
+            Account ID:
+            <strong id="accountId">
+            </strong>
+        </p>
+        <div class="d-flex justify-content-between">
+            <div class="text-center">
+                <div class="display-1" id="durationDays">0</div>
+                <p>days</p>
+            </div>
+            <div class="text-center">
+                <div class="display-1" id="durationHours">0</div>
+                <p>hours</p>
+            </div>
+            <div class="text-center">
+                <div class="display-1" id="durationMinutes">0</div>
+                <p>minutes</p>
+            </div>
+        </div>
+        <div class="d-flex justify-content-between">
+            <img class="display-1" src="assets/metervpn.png" style="width: 400px; height: 400px;" alt="">
+        </div>
+
+    </div>
+
+    <div class="col-md-8 p-5">
+        <h5>
+            Extend session:
+        </h5>
+        <div class="input-group">
+            <select class="custom-select" id="durationSelect">
+                <option selected>Choose plan...</option>
+                <option value=3>3 hours</option>
+                <option value=6>6 hours</option>
+                <option value=24>1 day</option>
+                <option value=72>3 days</option>
+                <option value=168>1 week</option>
+                <option value=720>30 days</option>
+            </select>
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="button" id="genPayReq">Buy</button>
+            </div>
+        </div>
+        <div class="row my-4">
+            <div class="col-6">
+                <p>BTC <span id="btcCost">0.00000000</span></p>
+                <p><span id="satCost">0</span> satoshi</p>
+            </div>
+            <div class="col-6">
+                <p>USD <span id="usdCost">$0.00</span></p>
+            </div>
+        </div>
+        <div class="row my-4">
+            <div class="col-4">
+                <div id="payReqQR">
+                </div>
+            </div>
+            <div class="col-8 w-100 bg-light">
+                <div id="payReqStr">
+                </div>
+            </div>
+        </div>
+        <h4>
+            <button id="genWireGuardConfig" class="btn btn-primary">Generate WireGuard config</button>
+        </h4>
+
+    </div>
+</div>
+<style>
+    #payReqStr {
+        width: 100%;
+        height: fit-content;
+        overflow-wrap: break-word;
+    }
+
+    #payReqQR {
+        width: 192px;
+        height: 192px;
+    }
+</style>
+{{end}}

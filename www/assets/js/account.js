@@ -12,6 +12,11 @@ async function refreshDuration() {
 }
 
 $(document).ready(async () => {
+    const accountId = Cookies.get("accountId")
+    if (!accountId) {
+        window.location.href = "/"
+        return
+    }
     const payReqQrCode = new QRCode(
         document.getElementById("payReqQR"),
         {
@@ -22,7 +27,6 @@ $(document).ready(async () => {
 
     const $durationSelect = $("#durationSelect");
 
-    const accountId = Cookies.get("accountId")
     $("#accountId").text(accountId)
     $("#genPayReq").click(async () => {
         const duration = String(3600 * parseInt($durationSelect.val()))

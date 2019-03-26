@@ -3,6 +3,10 @@ body {
     color: #f0eae4;
 }
 
+pre {
+    color: #f0eae4;
+}
+
 .content {
     background: #223140;
     border: #10171e 1px solid;
@@ -22,4 +26,8 @@ nav {
 
 nav > a {
     color: #6c9ccd;
+}
+
+hr {
+    border: #475059 1px solid;
 }

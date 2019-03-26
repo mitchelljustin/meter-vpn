@@ -1,0 +1,26 @@
+{{define "content"}}
+<script src="assets/js/createAccount.js"></script>
+<h2 class="row">
+    Create account
+</h2>
+<hr>
+<div class="row">
+    <div class="col-6">
+        <p>
+            Click the button to create an account
+        </p>
+        <button id="getNewAccountId" class="btn btn-success">Get New Account ID</button>
+        <div id="withAccount" style="display: none" class="pt-4">
+            <strong>Account ID:</strong>
+            <pre id="accountId"></pre>
+            <a class="btn btn-primary" href="account">
+                Go to Account
+            </a>
+        </div>
+
+    </div>
+    <div class="col">
+    </div>
+</div>
+
+{{end}}
