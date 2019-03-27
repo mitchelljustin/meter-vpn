@@ -1,15 +1,6 @@
-body {
-    background: #1d2a37;
-    color: #f0eae4;
-}
-
-pre {
-    color: #f0eae4;
-}
-
 .content {
-    background: #223140;
-    border: #10171e 1px solid;
+    background: #272a2e;
+    border-top: #10171e 1px solid;
 }
 
 small {
@@ -21,11 +12,7 @@ small {
 }
 
 nav {
-    background: #283a4c;
-}
-
-nav > a {
-    color: #6c9ccd;
+    background: #272a2e;
 }
 
 hr {

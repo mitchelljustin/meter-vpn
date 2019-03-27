@@ -1,34 +1,75 @@
 {{define "content"}}
 <script src="assets/js/createAccount.js"></script>
 <h2 class="row">
-    Create account
+    <div class="col">Create account</div>
 </h2>
 <hr>
 <div class="row">
-    <div class="col-6">
-        <p>
-            Click the button to create an account
-        </p>
-        <button id="getNewAccountId" class="btn btn-success">Get New Account</button>
-        <div id="withAccount" style="display: none" class="pt-4">
-            <strong>Account ID:</strong>
-            <pre id="accountId"></pre>
-            <a class="btn btn-primary" href="account">
-                Go to Account
-            </a>
+    <div class="col"></div>
+    <div class="col-9">
+        <div class="row">
+            <div class="col">
+                <p>
+                    1. Click the button below to get an anonymous Account ID. You should back it up somewhere safe.
+                </p>
+                <div class="row">
+                    <div class="col">
+                        <button id="getNewAccountId" class="btn btn-success">Get Account ID</button>
+
+                    </div>
+                    <div class="col-9">
+                        <div id="withAccount" class="d-none">
+                            Account ID: <strong id="accountId"></strong>
+                            <p><small>✓ Saved to browser</small></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col">
+                <p>
+                    2. Set up Lightning payments
+                </p>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        i. Buy Bitcoin on a centralized exchange, or a peer-to-peer exchange like <a
+                            href="https://localbitcoins.com">LocalBitcoins</a>
+                    </li>
+                    <li class="list-group-item">
+                        ii. Download a Lightning wallet like <a href="https://zap.jackmallers.com/">Zap</a>
+                    </li>
+                    <li class="list-group-item">
+                        iii. Send some Bitcoin to your Lightning wallet
+                        <div><small>We recommend you send no more than $20 worth of Bitcoin to your Lightning wallet</small></div>
+                    </li>
+                    <li class="list-group-item">
+                        iv. In your Lightning wallet, open a channel with a well-connected hub such as Yalls or Zap.
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col">
+                <p>
+                    3. Download and install the <a href="https://www.wireguard.com/install/">WireGuard VPN app</a>
+                </p>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col">
+                <p>
+                    4. Log in to your account
+                </p>
+                <p>
+                    <a href="account" class="btn btn-primary">
+                        Log In
+                    </a>
+                </p>
+            </div>
         </div>
     </div>
     <div class="col">
-        <div class="row">
-            <h5>
-                Set up WireGuard
-            </h5>
-        </div>
-        <div class="row">
-            <h5>
-                Set up Lightning payments
-            </h5>
-        </div>
     </div>
 </div>
 

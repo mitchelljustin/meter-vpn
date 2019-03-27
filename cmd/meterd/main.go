@@ -129,13 +129,19 @@ func startGinServer(booth *daemon.TollBooth, port int) {
 	router.POST("/peer/extend", booth.HandleExtensionRequest)
 
 	router.GET("/", func(ctx *gin.Context) {
-		ctx.HTML(http.StatusOK, "index", nil)
+		ctx.HTML(http.StatusOK, "index", gin.H{
+			"title": "MeterVPN - Anonymous, pro-rated VPN",
+		})
 	})
 	router.GET("/account", func(ctx *gin.Context) {
-		ctx.HTML(http.StatusOK, "account", nil)
+		ctx.HTML(http.StatusOK, "account", gin.H{
+			"title": "MeterVPN - My Account",
+		})
 	})
 	router.GET("/create-account", func(ctx *gin.Context) {
-		ctx.HTML(http.StatusOK, "createAccount", nil)
+		ctx.HTML(http.StatusOK, "createAccount", gin.H{
+			"title": "MeterVPN - Create account",
+		})
 	})
 	router.Use(static.ServeRoot("/", "./www"))
 
