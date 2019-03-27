@@ -143,6 +143,16 @@ func startGinServer(booth *daemon.TollBooth, port int) {
 			"title": "MeterVPN - Create account",
 		})
 	})
+	router.GET("/faq", func(ctx *gin.Context) {
+		ctx.HTML(http.StatusOK, "faq", gin.H{
+			"title": "MeterVPN - Frequently Asked Questions",
+		})
+	})
+	router.GET("/about", func(ctx *gin.Context) {
+		ctx.HTML(http.StatusOK, "faq", gin.H{
+			"title": "MeterVPN - About",
+		})
+	})
 	router.Use(static.ServeRoot("/", "./www"))
 
 	addr := fmt.Sprintf(":%v", port)

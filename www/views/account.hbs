@@ -1,74 +1,111 @@
 {{define "content"}}
 <script src="assets/js/account.js"></script>
 <div class="row">
-    <div class="col-md-4">
-        <h3>My Account</h3>
-        <p>
+    <div class="col-lg p-3">
+        <h2>My Account</h2>
+        <p class="text-dark">
             Account ID:
             <strong id="accountId">
             </strong>
         </p>
+        <div class="py-2"></div>
+        <div class="card text-white bg-light mb-3">
+            <div class="card-header">WireGuard setup</div>
+            <div class="card-body">
+                <div class="card-text">
+
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            1. Make sure you've downloaded and installed the <a
+                                href="https://www.wireguard.com/install/">WireGuard VPN app</a>.
+                        </li>
+                        <li class="list-group-item">
+                            2. Start the Wireguard VPN app
+                        </li>
+                        <li class="list-group-item">
+                            <p>3. Download your VPN configuration by clicking the button below</p>
+                            <div>
+                                <button id="genWireGuardConfig" class="btn btn-primary">
+                                    Download configuration ZIP
+                                </button>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <p>4. Import the VPN configuration into WireGuard</p>
+                            <img style="height: 150px; width: 100%; display: block;"
+                                 src="assets/images/Wireguard_Import_Guide.png" alt="">
+                        </li>
+                        <li class="list-group-item">
+                            <p>
+                                5. Click "Activate" on the imported VPN tunnel.
+                                <span class="text-dark">(Make sure you've bought enough MeterVPN time or the tunnel won't work.)</span>
+                            </p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <h4>
+            Time left:
+        </h4>
         <div class="d-flex justify-content-between">
             <div class="text-center">
                 <div class="display-1" id="durationDays">0</div>
-                <p>days</p>
+                <p class="text-white-50">days</p>
             </div>
             <div class="text-center">
                 <div class="display-1" id="durationHours">0</div>
-                <p>hours</p>
+                <p class="text-white-50">hours</p>
             </div>
             <div class="text-center">
                 <div class="display-1" id="durationMinutes">0</div>
-                <p>minutes</p>
+                <p class="text-white-50">minutes</p>
             </div>
         </div>
-        <div class="d-flex justify-content-between">
-            <img class="display-1" src="assets/metervpn.png" style="width: 400px; height: 400px;" alt="">
-        </div>
-
-    </div>
-
-    <div class="col-md-8 p-5">
-        <h5>
-            Extend session:
-        </h5>
-        <div class="input-group">
-            <select class="custom-select" id="durationSelect">
-                <option selected>Choose plan...</option>
-                <option value=3>3 hours</option>
-                <option value=6>6 hours</option>
-                <option value=24>1 day</option>
-                <option value=72>3 days</option>
-                <option value=168>1 week</option>
-                <option value=720>30 days</option>
-            </select>
-            <div class="input-group-append">
-                <button class="btn btn-outline-secondary" type="button" id="genPayReq">Buy</button>
-            </div>
-        </div>
-        <div class="row my-4">
-            <div class="col-6">
-                <p>BTC <span id="btcCost">0.00000000</span></p>
-                <p><span id="satCost">0</span> satoshi</p>
-            </div>
-            <div class="col-6">
-                <p>USD <span id="usdCost">$0.00</span></p>
-            </div>
-        </div>
-        <div class="row my-4">
-            <div class="col-4">
-                <div id="payReqQR">
+        <div>
+            <h5 class="pt-4">
+                Add time:
+            </h5>
+            <div class="input-group">
+                <select class="custom-select" id="durationSelect">
+                    <option value="null" selected>Choose plan...</option>
+                    <option value=3>3 hours</option>
+                    <option value=6>6 hours</option>
+                    <option value=24>1 day</option>
+                    <option value=72>3 days</option>
+                    <option value=168>1 week</option>
+                    <option value=720>30 days</option>
+                </select>
+                <div class="input-group-append">
+                    <button class="btn btn-success" type="button" id="genPayReq">Request</button>
                 </div>
             </div>
-            <div class="col-8 w-100 bg-light">
-                <div id="payReqStr">
+            <div class="row my-4">
+                <div class="col d-inline-flex justify-content-between text-white">
+                    <span>Price: </span>
+                    <span class="text-gold" data-toggle="tooltip" data-placement="bottom"
+                          title="100 millionths of a Bitcoin">
+                        <span id="satCost">0</span> sat
+                    </span>
+                    /
+                    <span><span id="usdCost">$0.00</span> USD</span>
+                    /
+                    <span><span id="btcCost">0.00000000</span> BTC</span>
+                </div>
+            </div>
+            <div id="withPayReq" class="row my-4 d-none">
+                <div class="col-4">
+                    <div id="payReqQR">
+                    </div>
+                </div>
+                <div class="col-8 w-100 bg-light">
+                    <div id="payReqStr">
+                    </div>
                 </div>
             </div>
         </div>
-        <h4>
-            <button id="genWireGuardConfig" class="btn btn-primary">Download WireGuard config</button>
-        </h4>
-
     </div>
 </div>
 <style>

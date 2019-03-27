@@ -12,6 +12,7 @@ async function refreshDuration() {
 }
 
 $(document).ready(async () => {
+    $('[data-toggle="tooltip"]').tooltip()
     const accountId = Cookies.get("accountId")
     if (!accountId) {
         window.location.href = "/"
@@ -29,7 +30,11 @@ $(document).ready(async () => {
 
     $("#accountId").text(accountId)
     $("#genPayReq").click(async () => {
-        const duration = String(3600 * parseInt($durationSelect.val()))
+        const selectedDuration = $durationSelect.val()
+        if (selectedDuration === "null") {
+            return
+        }
+        const duration = String(3600 * parseInt(selectedDuration))
         try {
             await $.ajax({
                 url: `/peer/extend`,
@@ -45,7 +50,7 @@ $(document).ready(async () => {
             $payReqStr.append(`<a href="${payReqUrl}">${payReq}</a>`)
             payReqQrCode.clear()
             payReqQrCode.makeCode(payReqUrl)
-
+            $("#withPayReq").removeClass("d-none")
         }
     })
 
