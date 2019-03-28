@@ -1,12 +1,12 @@
 {{define "content"}}
-<script src="assets/js/createAccount.js"></script>
-<h2 class="row">
-    <div class="col">Create account</div>
-</h2>
-<hr>
 <div class="row">
     <div class="col"></div>
     <div class="col-9">
+        <h2 class="row">
+            <div class="col">Create account</div>
+        </h2>
+        <hr>
+
         <div class="row">
             <div class="col">
                 <p>
@@ -20,7 +20,9 @@
                     <div class="col-9">
                         <div id="withAccount" class="d-none">
                             Account ID: <strong id="accountId"></strong>
-                            <p><small>✓ Saved to browser</small></p>
+                            <p>
+                                <small>✓ Saved to browser</small>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -41,7 +43,10 @@
                     </li>
                     <li class="list-group-item">
                         iii. Send some Bitcoin to your Lightning wallet
-                        <div><small>We recommend you send no more than $20 worth of Bitcoin to your Lightning wallet</small></div>
+                        <div>
+                            <small>We recommend you send no more than $20 worth of Bitcoin to your Lightning wallet
+                            </small>
+                        </div>
                     </li>
                     <li class="list-group-item">
                         iv. In your Lightning wallet, open a channel with a well-connected hub such as Yalls or Zap.
@@ -72,5 +77,17 @@
     <div class="col">
     </div>
 </div>
-
+<script>
+    $(document).ready(async () => {
+        const $accountId = $("#accountId");
+        const $getNewAccountId = $("#getNewAccountId");
+        $getNewAccountId.click(async () => {
+            const {accountId} = await $.post("/peer")
+            Cookies.set("accountId", accountId)
+            $("#withAccount").removeClass("d-none")
+            $accountId.text(accountId)
+            $getNewAccountId.attr("disabled", true)
+        })
+    })
+</script>
 {{end}}

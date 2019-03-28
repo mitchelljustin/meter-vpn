@@ -15,7 +15,7 @@ $(document).ready(async () => {
     $('[data-toggle="tooltip"]').tooltip()
     const accountId = Cookies.get("accountId")
     if (!accountId) {
-        window.location.href = "/"
+        window.location.href = "/login"
         return
     }
     const payReqQrCode = new QRCode(

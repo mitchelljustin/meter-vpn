@@ -1,0 +1,55 @@
+{{define "content"}}
+<div class="row">
+    <div class="col-md"></div>
+    <div class="col-md-8">
+        <h2>
+            Log In
+        </h2>
+        <hr>
+        <p>
+            Enter your Account ID to log into your MeterVPN account.
+        </p>
+        <label for="accountId">
+            Account ID
+        </label>
+        <div class="input-group input-group-lg w-75">
+            <input id="accountId" type="text" class="form-control" placeholder="e.g. YT4M7LCX27465ONU">
+            <div class="input-group-append">
+                <button id="login" class="btn btn-primary">Login</button>
+            </div>
+        </div>
+        <p id="error" class="text-danger"></p>
+        <p>
+            <a href="create-account">Don't have an account?</a>
+        </p>
+    </div>
+    <div class="col-md"></div>
+</div>
+<script>
+    $(document).ready(() => {
+        const $error = $("#error");
+        $("#login").click(async () => {
+            const accountId = $("#accountId").val().trim()
+            if (accountId === "") {
+                $error.text("Account ID cannot be empty")
+                return
+            }
+            Cookies.set("accountId", accountId)
+            try {
+                await $.getJSON(`/peer`)
+            } catch (e) {
+                if (e.status === 404) {
+                    $error.text(`Account not found: ${accountId}`)
+                } else if (e.responseJSON && e.responseJSON.error) {
+                    $error.text(e.responseJSON.error)
+                } else {
+                    $error.text(`Unknown error: ${JSON.stringify(e)}`)
+                }
+                Cookies.remove("accountId")
+                return
+            }
+            window.location.href = "account"
+        })
+    })
+</script>
+{{end}}

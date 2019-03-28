@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/foolin/gin-template"
+	gintemplate "github.com/foolin/gin-template"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -53,6 +53,18 @@ func main() {
 	go watchman.Run()
 
 	startGinServer(booth, *port)
+}
+
+func startGinServer(booth *daemon.TollBooth, port int) {
+	router := gin.Default()
+
+	createApiRoutes(router, booth)
+
+	createClientRoutes(router)
+
+	addr := fmt.Sprintf(":%v", port)
+	log.Printf("Server running at %v", addr)
+	log.Fatal(router.Run(addr))
 }
 
 const (
@@ -110,24 +122,22 @@ func priceHandler() func(ctx *gin.Context) {
 	}
 }
 
-func startGinServer(booth *daemon.TollBooth, port int) {
-	router := gin.Default()
+func createApiRoutes(router *gin.Engine, booth *daemon.TollBooth) {
+	router.GET("/price", priceHandler())
+	router.POST("/peer", booth.HandleCreatePeerRequest)
+	router.GET("/peer", booth.HandleGetPeerRequest)
+	router.GET("/peer/ip", booth.HandleIPRequest)
+	router.POST("/peer/pubkey", booth.HandleSetPubkeyRequest)
+	router.POST("/peer/extend", booth.HandleExtensionRequest)
+}
 
+func createClientRoutes(router *gin.Engine) {
 	router.HTMLRender = gintemplate.New(gintemplate.TemplateConfig{
 		Root:         "www/views",
 		Extension:    ".hbs",
 		Master:       "layouts/master",
 		DisableCache: true,
 	})
-
-	router.GET("/price", priceHandler())
-
-	router.POST("/peer", booth.HandleCreatePeerRequest)
-	router.GET("/peer", booth.HandleGetPeerRequest)
-	router.GET("/peer/ip", booth.HandleIPRequest)
-	router.POST("/peer/pubkey", booth.HandleSetPubkeyRequest)
-	router.POST("/peer/extend", booth.HandleExtensionRequest)
-
 	router.GET("/", func(ctx *gin.Context) {
 		ctx.HTML(http.StatusOK, "index", gin.H{
 			"title": "MeterVPN - Anonymous, pro-rated VPN",
@@ -136,6 +146,11 @@ func startGinServer(booth *daemon.TollBooth, port int) {
 	router.GET("/account", func(ctx *gin.Context) {
 		ctx.HTML(http.StatusOK, "account", gin.H{
 			"title": "MeterVPN - My Account",
+		})
+	})
+	router.GET("/login", func(ctx *gin.Context) {
+		ctx.HTML(http.StatusOK, "login", gin.H{
+			"title": "MeterVPN - Log In",
 		})
 	})
 	router.GET("/create-account", func(ctx *gin.Context) {
@@ -154,8 +169,4 @@ func startGinServer(booth *daemon.TollBooth, port int) {
 		})
 	})
 	router.Use(static.ServeRoot("/", "./www"))
-
-	addr := fmt.Sprintf(":%v", port)
-	log.Printf("Server running at %v", addr)
-	log.Fatal(router.Run(addr))
 }

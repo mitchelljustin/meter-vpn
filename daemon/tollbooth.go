@@ -2,6 +2,7 @@ package daemon
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/lightningnetwork/lnd/lnrpc"
@@ -169,6 +170,10 @@ func (tb *TollBooth) HandleGetPeerRequest(ctx *gin.Context) {
 	accountId, err := ctx.Cookie("accountId")
 	if err != nil {
 		respondServerError(ctx, err)
+		return
+	}
+	if accountId == "" {
+		respondBadRequest(ctx, errors.New("missing accountId"))
 		return
 	}
 	peer, err := tb.store.GetPeer(accountId)

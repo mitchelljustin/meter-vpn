@@ -1,5 +1,4 @@
 {{define "content"}}
-<script src="assets/js/index.js"></script>
 <div class="row d-flex align-items-end">
     <div class="col-md">
         <img src="assets/images/metervpn.png" style="width: 100%;" alt="">
@@ -28,7 +27,7 @@
         </p>
         <div class="mt-4">
             <a class="btn btn-lg btn-success" href="create-account">Create Account</a>
-            <a class="btn btn-lg btn-secondary" href="account">Log In</a>
+            <a class="btn btn-lg btn-secondary" href="login">Log In</a>
         </div>
     </div>
 </div>
@@ -67,4 +66,13 @@
         </p>
     </div>
 </div>
+<script>
+    $(document).ready(async () => {
+        $('[data-toggle="tooltip"]').tooltip()
+
+        const prices = await $.getJSON("/price")
+        $("#24hPriceSats").text(prices.satoshi.day.split(".")[0])
+        $("#24hPriceUsd").text(prices.usd.day)
+    })
+</script>
 {{end}}
