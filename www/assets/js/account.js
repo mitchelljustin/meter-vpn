@@ -43,9 +43,9 @@ $(document).ready(async () => {
                 data: JSON.stringify({duration}),
             })
         } catch (e) {
-            const payReq = e.responseText;
+            const payReq = e.responseText
             const payReqUrl = `lightning:${payReq}`
-            const $payReqStr = $("#payReqStr");
+            const $payReqStr = $("#payReqStr")
             $payReqStr.text("")
             $payReqStr.append(`<a href="${payReqUrl}">${payReq}</a>`)
             payReqQrCode.clear()
@@ -54,10 +54,16 @@ $(document).ready(async () => {
         }
     })
 
+    const $btcCost = $("#btcCost")
+    const $satCost = $("#satCost")
+    const $usdCost = $("#usdCost")
     $durationSelect.change(async () => {
         let hours = parseInt($durationSelect.val())
         if (isNaN(hours)) {
-            hours = 0
+            $btcCost.text("~")
+            $satCost.text("~")
+            $usdCost.text("~")
+            return
         }
         const prices = await $.getJSON("/price")
         const satsPerHour = parseFloat(prices.satoshi.hour)
@@ -65,9 +71,9 @@ $(document).ready(async () => {
         const sats = Math.ceil(satsPerHour * hours)
         const btc = sats / 1e8
         const usd = usdPerHour * hours
-        $("#btcCost").text(btc.toFixed(8))
-        $("#satCost").text(numberWithCommas(sats))
-        $("#usdCost").text(`$${usd.toFixed(4)}`)
+        $btcCost.text(btc.toFixed(8))
+        $satCost.text(numberWithCommas(sats))
+        $usdCost.text(`$${usd.toFixed(4)}`)
     })
     await refreshDuration()
     setTimeout(refreshDuration, 1000 * 60)

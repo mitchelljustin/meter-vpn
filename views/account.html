@@ -7,11 +7,6 @@
             <strong id="accountId">
             </strong>
         </p>
-        <p>
-            <button data-action="logout" class="btn btn-warning">
-                Log Out
-            </button>
-        </p>
         <div class="py-2"></div>
         <div class="card text-white bg-light mb-3">
             <div class="card-header">WireGuard setup</div>
@@ -51,9 +46,9 @@
         </div>
     </div>
     <div class="col-lg-7">
-        <h3>
-            Time left:
-        </h3>
+        <div class="d-flex justify-content-around w-100">
+            <img src="/assets/images/metervpn.png" alt="">
+        </div>
         <div class="row">
             <div class="col-md"></div>
             <div class="col-md-8">
@@ -74,11 +69,12 @@
             </div>
             <div class="col-md"></div>
         </div>
+        <h5 class="text-right text-dark py-3">of VPN service left</h5>
         <div>
             <h5 class="pt-4">
                 Add time:
             </h5>
-            <div class="input-group">
+            <div class="input-group input-group-lg">
                 <select class="custom-select" id="durationSelect">
                     <option value="null" selected>Choose duration...</option>
                     <option value=3>3 hours</option>
@@ -97,12 +93,12 @@
                     <span>Price: </span>
                     <span class="text-gold" data-toggle="tooltip" data-placement="bottom"
                           title="100 millionths of a Bitcoin">
-                        <span id="satCost">0</span> sat
+                        <span id="satCost">~</span> sat
                     </span>
                     /
-                    <span><span id="usdCost">$0.00</span> USD</span>
+                    <span><span id="btcCost">~</span> BTC</span>
                     /
-                    <span><span id="btcCost">0.00000000</span> BTC</span>
+                    <span><span id="usdCost">~</span> USD</span>
                 </h5>
             </div>
             <div id="withPayReq" class="row my-4 d-none">

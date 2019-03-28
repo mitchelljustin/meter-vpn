@@ -86,6 +86,10 @@ func (store *SQLitePeerStore) GetPeersWithKey() ([]Peer, error) {
 }
 
 func (p *Peer) AddAllowance(duration time.Duration) {
+	now := time.Now()
+	if now.After(p.ExpiryDate) {
+		p.ExpiryDate = now
+	}
 	p.ExpiryDate = p.ExpiryDate.Add(duration)
 }
 
