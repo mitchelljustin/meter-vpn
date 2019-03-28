@@ -131,24 +131,35 @@ func createApiRoutes(router *gin.Engine, booth *daemon.TollBooth) {
 	router.POST("/peer/extend", booth.HandleExtensionRequest)
 }
 
-var Pages = map[string]gin.H{
-	"index": {
-		"title": "MeterVPN - Anonymous, pro-rated VPN",
+type pageInfo struct {
+	Title string
+	File  string
+}
+
+var Pages = map[string]pageInfo{
+	"": {
+		File:  "index",
+		Title: "MeterVPN - Anonymous, pro-rated VPN",
 	},
 	"account": {
-		"title": "MeterVPN - My Account",
+		File:  "account",
+		Title: "MeterVPN - My Account",
 	},
 	"login": {
-		"title": "MeterVPN - Log In",
+		File:  "login",
+		Title: "MeterVPN - Log In",
 	},
 	"create-account": {
-		"title": "MeterVPN - Create account",
+		File:  "create-account",
+		Title: "MeterVPN - Create account",
 	},
 	"faq": {
-		"title": "MeterVPN - Frequently Asked Questions",
+		File:  "faq",
+		Title: "MeterVPN - Frequently Asked Questions",
 	},
 	"about": {
-		"title": "MeterVPN - About",
+		File:  "about",
+		Title: "MeterVPN - About",
 	},
 }
 
@@ -159,17 +170,18 @@ func createWwwRoutes(router *gin.Engine) {
 		Master:       "layouts/master",
 		DisableCache: true,
 	})
-	for name, staticInfo := range Pages {
-		router.GET("/"+name, func(ctx *gin.Context) {
-			accountId, err := ctx.Cookie("accountId")
-			loggedIn := err != http.ErrNoCookie && accountId != ""
-			info := make(gin.H)
-			info["loggedIn"] = loggedIn
-			for k, v := range staticInfo {
-				info[k] = v
-			}
-			ctx.HTML(http.StatusOK, name, info)
-		})
+	for name, info := range Pages {
+		path := "/" + name
+		func(path string, info pageInfo) {
+			router.GET(path, func(ctx *gin.Context) {
+				accountId, err := ctx.Cookie("accountId")
+				loggedIn := err != http.ErrNoCookie && accountId != ""
+				ctx.HTML(http.StatusOK, info.File, gin.H{
+					"Title":    info.Title,
+					"LoggedIn": loggedIn,
+				})
+			})
+		}(path, info)
 	}
 	router.Use(static.ServeRoot("/", "./www"))
 }

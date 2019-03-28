@@ -6,7 +6,7 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>
-        {{ .title }}
+        {{ .Title }}
     </title>
     <link rel="stylesheet" href="assets/external/bootstrap.min.css">
     <link rel="stylesheet" href="assets/css/global_style.css">
@@ -25,9 +25,13 @@
 </head>
 <body class="container">
 <nav class="navbar navbar-expand-lg navbar-dark">
-
     <a class="nav-link" href="/">MeterVPN</a>
-    <a class="nav-link ml-auto" href="/account">My Account</a>
+    {{if .LoggedIn}}
+        <a class="nav-link ml-auto" href="/account">My Account</a>
+        <button class="btn btn-link nav-link" data-action="logout">Logout</button>
+    {{else}}
+        <a class="nav-link ml-auto" href="/login">Log In</a>
+    {{end}}
     <a class="nav-link" href="/faq">FAQ</a>
     <a class="nav-link" href="/about">About</a>
 </nav>
