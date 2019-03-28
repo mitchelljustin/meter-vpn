@@ -11,46 +11,46 @@ import (
 
 const WireguardDeviceName = "wg0"
 
-type Watchman struct {
+type VPNAgent struct {
 	Store    PeerStore
 	Interval time.Duration
 
 	wireGuard *wireguardctrl.Client
 }
 
-func (w *Watchman) Report(format string, v ...interface{}) {
+func (a *VPNAgent) Report(format string, v ...interface{}) {
 	log.Printf("[WATCHMAN] %v", fmt.Sprintf(format, v...))
 }
 
-func (w *Watchman) Run() {
-	log.Printf("Running Watchman at interval: %v", w.Interval)
-	w.ConnectToWireGuard()
-	defer w.wireGuard.Close()
+func (a *VPNAgent) Run() {
+	log.Printf("Running VPNAgent at interval: %v", a.Interval)
+	a.ConnectToWireGuard()
+	defer a.wireGuard.Close()
 
-	ticker := time.NewTicker(w.Interval)
+	ticker := time.NewTicker(a.Interval)
 	for {
-		w.Tick()
+		a.Tick()
 		<-ticker.C
 	}
 }
 
-func (w *Watchman) ConnectToWireGuard() {
+func (a *VPNAgent) ConnectToWireGuard() {
 	client, err := wireguardctrl.New()
 
 	if err != nil {
-		w.Report("Could not connect to Wireguard: %v", err)
+		a.Report("Could not connect to Wireguard: %v", err)
 		return
 	}
 
-	w.wireGuard = client
+	a.wireGuard = client
 }
 
-func (w *Watchman) Tick() {
+func (a *VPNAgent) Tick() {
 	now := time.Now()
-	w.Report("TICK: %v", now)
-	device, err := w.wireGuard.Device(WireguardDeviceName)
+	a.Report("TICK: %v", now)
+	device, err := a.wireGuard.Device(WireguardDeviceName)
 	if err != nil {
-		w.Report("Error getting WireGuard device: %v", err)
+		a.Report("Error getting WireGuard device: %v", err)
 		return
 	}
 
@@ -60,31 +60,31 @@ func (w *Watchman) Tick() {
 	}
 
 	var peers []Peer
-	if peers, err = w.Store.GetPeersWithKey(); err != nil {
-		w.Report("Error getting peers: %v", err)
+	if peers, err = a.Store.GetPeersWithKey(); err != nil {
+		a.Report("Error getting peers: %v", err)
 		return
 	}
 	for _, peer := range peers {
-		w.Report("Checking peer %v (expiry %v)", peer.AccountID, peer.ExpiryDate)
+		a.Report("Checking peer %v (expiry %v)", peer.AccountID, peer.ExpiryDate)
 		key, err := KeyFromBase64(*peer.PublicKeyB64)
 		if err != nil {
-			w.Report("ERROR: %v", err)
+			a.Report("ERROR: %v", err)
 		}
 		if now.Before(peer.ExpiryDate) && !connectedToWg[*key] {
-			if err := w.ConnectPeer(&peer); err != nil {
-				w.Report("Could not connect peer: %v", err)
+			if err := a.ConnectPeer(&peer); err != nil {
+				a.Report("Could not connect peer: %v", err)
 			}
 		}
 		if now.After(peer.ExpiryDate) && connectedToWg[*key] {
-			if err := w.DisconnectPeer(&peer); err != nil {
-				w.Report("Could not disconnect peer: %v", err)
+			if err := a.DisconnectPeer(&peer); err != nil {
+				a.Report("Could not disconnect peer: %v", err)
 			}
 		}
 	}
 }
 
-func (w *Watchman) ConnectPeer(peer *Peer) error {
-	w.Report("Connecting peer: %v", peer.AccountID)
+func (a *VPNAgent) ConnectPeer(peer *Peer) error {
+	a.Report("Connecting peer: %v", peer.AccountID)
 	key, err := KeyFromBase64(*peer.PublicKeyB64)
 	if err != nil {
 		return err
@@ -100,7 +100,7 @@ func (w *Watchman) ConnectPeer(peer *Peer) error {
 			Mask: net.CIDRMask(128, 128),
 		})
 	}
-	if err := w.wireGuard.ConfigureDevice(WireguardDeviceName, wgtypes.Config{
+	if err := a.wireGuard.ConfigureDevice(WireguardDeviceName, wgtypes.Config{
 		Peers: []wgtypes.PeerConfig{
 			{
 				PublicKey:  *key,
@@ -113,13 +113,13 @@ func (w *Watchman) ConnectPeer(peer *Peer) error {
 	return nil
 }
 
-func (w *Watchman) DisconnectPeer(peer *Peer) error {
-	w.Report("Disconnecting peer: %v", peer.AccountID)
+func (a *VPNAgent) DisconnectPeer(peer *Peer) error {
+	a.Report("Disconnecting peer: %v", peer.AccountID)
 	key, err := KeyFromBase64(*peer.PublicKeyB64)
 	if err != nil {
 		return err
 	}
-	if err := w.wireGuard.ConfigureDevice(WireguardDeviceName, wgtypes.Config{
+	if err := a.wireGuard.ConfigureDevice(WireguardDeviceName, wgtypes.Config{
 		Peers: []wgtypes.PeerConfig{
 			{
 				PublicKey: *key,

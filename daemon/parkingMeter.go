@@ -19,13 +19,12 @@ import (
 
 const TimeFormat = time.RFC1123
 
-const SatsPerHour = 250
-
-type TollBooth struct {
+type ParkingMeter struct {
 	store           PeerStore
 	ctx             context.Context
 	lnClient        lnrpc.LightningClient
 	pendingInvoices map[string]pendingExtension
+	priceTracker    PriceTracker
 }
 
 type LNDParams struct {
@@ -34,7 +33,7 @@ type LNDParams struct {
 	CertPath     string
 }
 
-func NewTollBooth(store PeerStore, lndParams LNDParams) (*TollBooth, error) {
+func NewParkingMeter(store PeerStore, lndParams LNDParams) (*ParkingMeter, error) {
 	creds, err := credentials.NewClientTLSFromFile(lndParams.CertPath, "")
 	if err != nil {
 		return nil, err
@@ -50,8 +49,9 @@ func NewTollBooth(store PeerStore, lndParams LNDParams) (*TollBooth, error) {
 	macaroonHex := hex.EncodeToString(macaroon)
 	ctx := context.Background()
 	ctx = metadata.AppendToOutgoingContext(ctx, "macaroon", macaroonHex)
-	booth := TollBooth{
+	booth := ParkingMeter{
 		store:           store,
+		priceTracker:    PriceTracker{},
 		ctx:             ctx,
 		lnClient:        lnrpc.NewLightningClient(conn),
 		pendingInvoices: make(map[string]pendingExtension),
@@ -80,13 +80,13 @@ func respondServerError(ctx *gin.Context, err error) {
 	ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 }
 
-func (tb *TollBooth) loadPeerFromCookie(ctx *gin.Context) (*Peer, bool) {
+func (pm *ParkingMeter) loadPeerFromCookie(ctx *gin.Context) (*Peer, bool) {
 	accountId, err := ctx.Cookie("accountId")
 	if err != nil {
 		respondServerError(ctx, err)
 		return nil, false
 	}
-	peer, err := tb.store.GetPeer(accountId)
+	peer, err := pm.store.GetPeer(accountId)
 	if err == ErrPeerNotFound {
 		ctx.Status(404)
 		return nil, false
@@ -97,8 +97,8 @@ func (tb *TollBooth) loadPeerFromCookie(ctx *gin.Context) (*Peer, bool) {
 	return peer, true
 }
 
-func (tb *TollBooth) Run() {
-	sub, err := tb.lnClient.SubscribeInvoices(tb.ctx, &lnrpc.InvoiceSubscription{
+func (pm *ParkingMeter) Run() {
+	sub, err := pm.lnClient.SubscribeInvoices(pm.ctx, &lnrpc.InvoiceSubscription{
 		AddIndex:    0,
 		SettleIndex: 0,
 	})
@@ -117,24 +117,24 @@ func (tb *TollBooth) Run() {
 		payReq := invoice.PaymentRequest
 		var extension pendingExtension
 		var ok bool
-		if extension, ok = tb.pendingInvoices[payReq]; !ok {
+		if extension, ok = pm.pendingInvoices[payReq]; !ok {
 			continue
 		}
 		log.Printf("Adding %v of VPN time to %v", extension.Duration, extension.AccountID)
-		peer, err := tb.store.GetPeer(extension.AccountID)
+		peer, err := pm.store.GetPeer(extension.AccountID)
 		if err != nil {
 			continue
 		}
 		peer.AddAllowance(extension.Duration)
-		if err = tb.store.SavePeer(peer); err != nil {
+		if err = pm.store.SavePeer(peer); err != nil {
 			log.Printf("Error saving peer: %v", err)
 		}
-		delete(tb.pendingInvoices, payReq)
+		delete(pm.pendingInvoices, payReq)
 	}
 }
 
-func (tb *TollBooth) HandleExtensionRequest(ctx *gin.Context) {
-	peer, ok := tb.loadPeerFromCookie(ctx)
+func (pm *ParkingMeter) HandleExtensionRequest(ctx *gin.Context) {
+	peer, ok := pm.loadPeerFromCookie(ctx)
 	if !ok {
 		return
 	}
@@ -148,25 +148,25 @@ func (tb *TollBooth) HandleExtensionRequest(ctx *gin.Context) {
 		respondBadRequest(ctx, err)
 		return
 	}
-	sats := float64(duration) / float64(time.Hour) * SatsPerHour
+	sats := float64(duration) / float64(time.Hour) * pm.priceTracker.RetrieveSnapshot().Satoshi.Hour
 	invoice := lnrpc.Invoice{
 		Value: int64(math.Ceil(sats)),
 		Memo:  fmt.Sprintf("Add %v to MeterVPN allowance", duration),
 	}
-	resp, err := tb.lnClient.AddInvoice(tb.ctx, &invoice)
+	resp, err := pm.lnClient.AddInvoice(pm.ctx, &invoice)
 	if err != nil {
 		respondServerError(ctx, err)
 		return
 	}
 	payReq := resp.PaymentRequest
-	tb.pendingInvoices[payReq] = pendingExtension{
+	pm.pendingInvoices[payReq] = pendingExtension{
 		AccountID: peer.AccountID,
 		Duration:  duration,
 	}
 	ctx.String(402, payReq)
 }
 
-func (tb *TollBooth) HandleGetPeerRequest(ctx *gin.Context) {
+func (pm *ParkingMeter) HandleGetPeerRequest(ctx *gin.Context) {
 	accountId, err := ctx.Cookie("accountId")
 	if err != nil {
 		respondServerError(ctx, err)
@@ -176,7 +176,7 @@ func (tb *TollBooth) HandleGetPeerRequest(ctx *gin.Context) {
 		respondBadRequest(ctx, errors.New("missing accountId"))
 		return
 	}
-	peer, err := tb.store.GetPeer(accountId)
+	peer, err := pm.store.GetPeer(accountId)
 	if err == ErrPeerNotFound {
 		ctx.Status(404)
 		return
@@ -209,8 +209,8 @@ func PeerToJSON(peer *Peer) gin.H {
 	}
 }
 
-func (tb *TollBooth) HandleCreatePeerRequest(ctx *gin.Context) {
-	peer, err := tb.store.CreatePeer()
+func (pm *ParkingMeter) HandleCreatePeerRequest(ctx *gin.Context) {
+	peer, err := pm.store.CreatePeer()
 	if err != nil {
 		respondServerError(ctx, err)
 		return
@@ -218,8 +218,8 @@ func (tb *TollBooth) HandleCreatePeerRequest(ctx *gin.Context) {
 	ctx.JSON(200, PeerToJSON(peer))
 }
 
-func (tb *TollBooth) HandleSetPubkeyRequest(ctx *gin.Context) {
-	peer, ok := tb.loadPeerFromCookie(ctx)
+func (pm *ParkingMeter) HandleSetPubkeyRequest(ctx *gin.Context) {
+	peer, ok := pm.loadPeerFromCookie(ctx)
 	if !ok {
 		return
 	}
@@ -233,27 +233,27 @@ func (tb *TollBooth) HandleSetPubkeyRequest(ctx *gin.Context) {
 		return
 	}
 	peer.PublicKeyB64 = &config.PublicKey
-	if err := tb.store.SavePeer(peer); err != nil {
+	if err := pm.store.SavePeer(peer); err != nil {
 		respondServerError(ctx, err)
 		return
 	}
 	ctx.JSON(200, nil)
 }
 
-func (tb *TollBooth) HandleIPRequest(ctx *gin.Context) {
-	peer, ok := tb.loadPeerFromCookie(ctx)
+func (pm *ParkingMeter) HandleIPRequest(ctx *gin.Context) {
+	peer, ok := pm.loadPeerFromCookie(ctx)
 	if !ok {
 		return
 	}
 	if peer.IPv4 == nil {
-		ips, err := tb.store.GetNewIPs()
+		ips, err := pm.store.GetNewIPs()
 		if err != nil {
 			respondServerError(ctx, err)
 			return
 		}
 		peer.IPv4 = &ips[0]
 		peer.IPv6 = &ips[1]
-		if err := tb.store.SavePeer(peer); err != nil {
+		if err := pm.store.SavePeer(peer); err != nil {
 			respondServerError(ctx, err)
 			return
 		}
@@ -266,4 +266,8 @@ func (tb *TollBooth) HandleIPRequest(ctx *gin.Context) {
 		"ipv4": peer.IPv4.String(),
 		"ipv6": ipv6Str,
 	})
+}
+
+func (pm *ParkingMeter) HandlePriceRequest(ctx *gin.Context) {
+	ctx.JSON(200, pm.priceTracker.RetrieveSnapshot())
 }

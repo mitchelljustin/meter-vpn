@@ -1,55 +1,68 @@
 {{define "content"}}
-<div class="row">
-    <div class="col-md"></div>
-    <div class="col-md-8">
-        <h2>
-            Log In
-        </h2>
-        <hr>
-        <p>
-            Enter your Account ID to log into your MeterVPN account.
-        </p>
-        <label for="accountId">
-            Account ID
-        </label>
-        <div class="input-group input-group-lg w-75">
-            <input id="accountId" type="text" class="form-control" placeholder="e.g. YT4M7LCX27465ONU">
-            <div class="input-group-append">
-                <button id="login" class="btn btn-primary">Login</button>
+    <div class="row">
+        <div class="col-md"></div>
+        <div class="col-md-8">
+            <h2>
+                Log In
+            </h2>
+            <hr>
+            <p>
+                Enter your Account ID to log into your MeterVPN account.
+            </p>
+            <label for="accountId">
+                Account ID
+            </label>
+            <div class="input-group input-group-lg w-75">
+                <input id="accountId" type="text" class="form-control" placeholder="e.g. YT4M7LCX27465ONU">
+                <div class="input-group-append">
+                    <button id="login" class="btn btn-primary">Login</button>
+                </div>
             </div>
+            <p id="error" class="text-danger"></p>
+            <p>
+                <a href="create-account">Don't have an account?</a>
+            </p>
         </div>
-        <p id="error" class="text-danger"></p>
-        <p>
-            <a href="create-account">Don't have an account?</a>
-        </p>
+        <div class="col-md"></div>
     </div>
-    <div class="col-md"></div>
-</div>
-<script>
-    $(document).ready(() => {
-        const $error = $("#error");
-        $("#login").click(async () => {
-            const accountId = $("#accountId").val().trim()
-            if (accountId === "") {
-                $error.text("Account ID cannot be empty")
-                return
+    <script>
+        async function attemptLogin() {
+            const accountId = Cookies.get("accountId")
+            if (!accountId) {
+                return "Cannot load Account ID"
             }
-            Cookies.set("accountId", accountId)
             try {
                 await $.getJSON(`/peer`)
             } catch (e) {
-                if (e.status === 404) {
-                    $error.text(`Account not found: ${accountId}`)
-                } else if (e.responseJSON && e.responseJSON.error) {
-                    $error.text(e.responseJSON.error)
-                } else {
-                    $error.text(`Unknown error: ${JSON.stringify(e)}`)
-                }
                 Cookies.remove("accountId")
-                return
+                if (e.status === 404) {
+                    return `Account not found`
+                } else if (e.responseJSON && e.responseJSON.error) {
+                    return e.responseJSON.error
+                } else {
+                    return `Unknown error: ${JSON.stringify(e)}`
+                }
             }
-            window.location.href = "account"
+            window.location.href = "/account"
+            return undefined
+        }
+
+        $(document).ready(async () => {
+            await attemptLogin(false)
+            $("#login").click(async () => {
+                const $error = $("#error")
+                const $accountId = $("#accountId");
+                const accountId = $accountId.val().trim()
+                if (accountId === "") {
+                    $error.text("Account ID cannot be empty")
+                    return
+                }
+                Cookies.set("accountId", accountId)
+                const err = await attemptLogin(true)
+                if (err) {
+                    $error.text(err)
+                }
+            })
         })
-    })
-</script>
+    </script>
 {{end}}
