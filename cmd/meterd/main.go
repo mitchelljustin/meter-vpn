@@ -60,7 +60,7 @@ func startGinServer(booth *daemon.TollBooth, port int) {
 
 	createApiRoutes(router, booth)
 
-	createClientRoutes(router)
+	createWwwRoutes(router)
 
 	addr := fmt.Sprintf(":%v", port)
 	log.Printf("Server running at %v", addr)
@@ -131,42 +131,45 @@ func createApiRoutes(router *gin.Engine, booth *daemon.TollBooth) {
 	router.POST("/peer/extend", booth.HandleExtensionRequest)
 }
 
-func createClientRoutes(router *gin.Engine) {
+var Pages = map[string]gin.H{
+	"index": {
+		"title": "MeterVPN - Anonymous, pro-rated VPN",
+	},
+	"account": {
+		"title": "MeterVPN - My Account",
+	},
+	"login": {
+		"title": "MeterVPN - Log In",
+	},
+	"create-account": {
+		"title": "MeterVPN - Create account",
+	},
+	"faq": {
+		"title": "MeterVPN - Frequently Asked Questions",
+	},
+	"about": {
+		"title": "MeterVPN - About",
+	},
+}
+
+func createWwwRoutes(router *gin.Engine) {
 	router.HTMLRender = gintemplate.New(gintemplate.TemplateConfig{
-		Root:         "www/views",
-		Extension:    ".hbs",
+		Root:         "views",
+		Extension:    ".html",
 		Master:       "layouts/master",
 		DisableCache: true,
 	})
-	router.GET("/", func(ctx *gin.Context) {
-		ctx.HTML(http.StatusOK, "index", gin.H{
-			"title": "MeterVPN - Anonymous, pro-rated VPN",
+	for name, staticInfo := range Pages {
+		router.GET("/"+name, func(ctx *gin.Context) {
+			accountId, err := ctx.Cookie("accountId")
+			loggedIn := err != http.ErrNoCookie && accountId != ""
+			info := make(gin.H)
+			info["loggedIn"] = loggedIn
+			for k, v := range staticInfo {
+				info[k] = v
+			}
+			ctx.HTML(http.StatusOK, name, info)
 		})
-	})
-	router.GET("/account", func(ctx *gin.Context) {
-		ctx.HTML(http.StatusOK, "account", gin.H{
-			"title": "MeterVPN - My Account",
-		})
-	})
-	router.GET("/login", func(ctx *gin.Context) {
-		ctx.HTML(http.StatusOK, "login", gin.H{
-			"title": "MeterVPN - Log In",
-		})
-	})
-	router.GET("/create-account", func(ctx *gin.Context) {
-		ctx.HTML(http.StatusOK, "createAccount", gin.H{
-			"title": "MeterVPN - Create account",
-		})
-	})
-	router.GET("/faq", func(ctx *gin.Context) {
-		ctx.HTML(http.StatusOK, "faq", gin.H{
-			"title": "MeterVPN - Frequently Asked Questions",
-		})
-	})
-	router.GET("/about", func(ctx *gin.Context) {
-		ctx.HTML(http.StatusOK, "faq", gin.H{
-			"title": "MeterVPN - About",
-		})
-	})
+	}
 	router.Use(static.ServeRoot("/", "./www"))
 }
