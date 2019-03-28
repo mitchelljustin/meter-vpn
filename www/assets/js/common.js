@@ -11,3 +11,10 @@ function toBase64(buffer) {
 function numberWithCommas(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
+
+$(document).ready(() => {
+    $(`[data-action="logout"]`).click(() => {
+        Cookies.remove("accountId")
+        window.location.href = "/"
+    })
+})
