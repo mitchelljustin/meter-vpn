@@ -31,33 +31,7 @@
         <div class="row mt-4">
             <div class="col">
                 <p>
-                    2. Set up Lightning payments
-                </p>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">
-                        i. Buy Bitcoin on a centralized exchange, or a peer-to-peer exchange like <a
-                            href="https://localbitcoins.com">LocalBitcoins</a>
-                    </li>
-                    <li class="list-group-item">
-                        ii. Download a Lightning wallet like <a href="https://zap.jackmallers.com/">Zap</a>
-                    </li>
-                    <li class="list-group-item">
-                        iii. Send some Bitcoin to your Lightning wallet
-                        <div>
-                            <small>We recommend you send no more than $20 worth of Bitcoin to your Lightning wallet
-                            </small>
-                        </div>
-                    </li>
-                    <li class="list-group-item">
-                        iv. In your Lightning wallet, open a channel with a well-connected hub such as Yalls or Zap.
-                    </li>
-                </ul>
-            </div>
-        </div>
-        <div class="row mt-4">
-            <div class="col">
-                <p>
-                    3. Log in to your new account and follow the WireGuard guide
+                    2. Log in to your new account
                 </p>
                 <p>
                     <a id="login" href="account" class="btn btn-primary btn-lg d-none">
@@ -80,6 +54,7 @@
             $("#withAccount").removeClass("d-none")
             $accountId.text(accountId)
             $getNewAccountId.attr("disabled", true)
+            $("#login").removeClass("d-none")
         })
     })
 </script>
