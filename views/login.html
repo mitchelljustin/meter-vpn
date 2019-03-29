@@ -13,7 +13,7 @@
                 Account ID
             </label>
             <div class="input-group input-group-lg w-75">
-                <input id="accountId" type="text" class="form-control" placeholder="e.g. YT4M7LCX27465ONU">
+                <input name="accountId" id="accountId" type="text" class="form-control" placeholder="e.g. YT4M7LCX27465ONU">
                 <div class="input-group-append">
                     <button id="login" class="btn btn-primary">Login</button>
                 </div>
@@ -48,7 +48,7 @@
         }
 
         $(document).ready(async () => {
-            await attemptLogin(false)
+            await attemptLogin()
             $("#login").click(async () => {
                 const $error = $("#error")
                 const $accountId = $("#accountId");
@@ -58,7 +58,7 @@
                     return
                 }
                 Cookies.set("accountId", accountId)
-                const err = await attemptLogin(true)
+                const err = await attemptLogin()
                 if (err) {
                     $error.text(err)
                 }

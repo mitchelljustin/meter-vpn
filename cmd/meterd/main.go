@@ -8,6 +8,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"github.com/mvanderh/meter-vpn/daemon"
+	"github.com/ulule/limiter/v3"
+	mgin "github.com/ulule/limiter/v3/drivers/middleware/gin"
+	"github.com/ulule/limiter/v3/drivers/store/memory"
 	"log"
 	"net/http"
 	"time"
@@ -56,6 +59,10 @@ func main() {
 
 func startGinServer(booth *daemon.ParkingMeter, port int) {
 	router := gin.Default()
+
+	rate, _ := limiter.NewRateFromFormatted("1000-H")
+	lim := limiter.New(memory.NewStore(), rate)
+	router.Use(mgin.NewMiddleware(lim))
 
 	createApiRoutes(router, booth)
 

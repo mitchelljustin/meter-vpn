@@ -19,7 +19,7 @@ type VPNAgent struct {
 }
 
 func (a *VPNAgent) Report(format string, v ...interface{}) {
-	log.Printf("[WATCHMAN] %v", fmt.Sprintf(format, v...))
+	log.Printf("[VPNAGENT] %v", fmt.Sprintf(format, v...))
 }
 
 func (a *VPNAgent) Run() {

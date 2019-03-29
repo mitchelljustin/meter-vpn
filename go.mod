@@ -25,6 +25,7 @@ require (
 	github.com/mikioh/ipaddr v0.0.0-20190227002745-725a6cbe920e // indirect
 	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/ugorji/go/codec v0.0.0-20190309163734-c4a1c341dc93 // indirect
+	github.com/ulule/limiter/v3 v3.1.0
 	golang.org/x/net v0.0.0-20190311183353-d8887717615a
 	google.golang.org/grpc v1.19.0
 )
