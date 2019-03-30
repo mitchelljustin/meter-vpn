@@ -27,7 +27,7 @@
 </head>
 <body class="container">
 <nav class="navbar navbar-expand-lg navbar-dark">
-    <a class="nav-link" href="/">MeterVPN</a>
+    <h4><a class="nav-link" href="/">MeterVPN</a></h4>
     {{if .LoggedIn}}
         <a class="nav-link ml-auto" href="/account">My Account</a>
     {{else}}
@@ -39,7 +39,7 @@
         <button class="btn btn-link nav-link" data-action="logout">Logout</button>
     {{end}}
 </nav>
-<div class="content p-5">
+<div class="content p-md-5 p-3">
     {{template "content" .}}
 </div>
 </body>
