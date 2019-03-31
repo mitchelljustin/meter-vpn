@@ -60,9 +60,11 @@ func main() {
 func startGinServer(booth *daemon.ParkingMeter, port int) {
 	router := gin.Default()
 
-	rate, _ := limiter.NewRateFromFormatted("1000-H")
-	lim := limiter.New(memory.NewStore(), rate)
-	router.Use(mgin.NewMiddleware(lim))
+	if gin.Mode() == gin.ReleaseMode {
+		rate, _ := limiter.NewRateFromFormatted("1000-H")
+		lim := limiter.New(memory.NewStore(), rate)
+		router.Use(mgin.NewMiddleware(lim))
+	}
 
 	createApiRoutes(router, booth)
 

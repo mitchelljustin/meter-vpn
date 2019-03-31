@@ -4,11 +4,11 @@
 }
 
 small {
-    color: rgba(255, 255, 255, 0.5) ;
+    color: rgba(255, 255, 255, 0.5);
 }
 
 .text-gold {
-    color: #d9a357
+    color: #d9a357;
 }
 
 nav {
@@ -16,5 +16,6 @@ nav {
 }
 
 hr {
-    border: #475059 1px solid;
+    border-color: #475059;
+    margin: 3.5em 0;
 }
