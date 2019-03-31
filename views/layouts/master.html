@@ -26,21 +26,21 @@
     <script src="assets/js/common.js"></script>
 </head>
 <body class="container min-vh-100 d-flex flex-column">
-<nav class="navbar navbar-expand-lg navbar-dark">
+<nav class="navbar navbar-dark d-md-flex d-none flex-nowrap">
     <h3><a class="nav-link" href="/">MeterVPN</a></h3>
-    {{if .LoggedIn}}
-        <a class="nav-link ml-auto" href="/account">My Account</a>
-    {{else}}
-        <a class="nav-link ml-auto" href="/login">Log In</a>
-    {{end}}
-    <a class="nav-link" href="/faq">FAQ</a>
-    <a class="nav-link" href="/about">About</a>
-    {{if .LoggedIn}}
-        <button class="btn btn-link nav-link" data-action="logout">Logout</button>
-    {{end}}
+    {{include "layouts/navlinks"}}
 </nav>
+<nav class="navbar navbar-dark d-md-none d-flex p-2">
+    <h3 class="m-0"><a class="nav-link" href="/">MeterVPN</a></h3>
+    <button class="navbar-toggler mr-3" type="button" data-toggle="collapse" data-target="#mobileNavbar">
+        <span class="text-dark"><i class="fas fa-bars fa-2x"></i></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mobileNavbar">
+        {{include "layouts/navlinks"}}
+    </div>
+</nav>
+
 <div class="content p-md-5 p-3 flex-fill">
-    <div class="py-md-5 py-3"></div>
     {{template "content" .}}
 </div>
 </body>

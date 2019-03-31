@@ -1,0 +1,10 @@
+{{if .LoggedIn}}
+    <a class="nav-link ml-auto" href="/account">My Account</a>
+{{else}}
+    <a class="nav-link ml-auto" href="/login">Log In</a>
+{{end}}
+<a class="nav-link" href="/faq">FAQ</a>
+<a class="nav-link" href="/about">About</a>
+{{if .LoggedIn}}
+    <button class="btn btn-link nav-link" data-action="logout">Logout</button>
+{{end}}
