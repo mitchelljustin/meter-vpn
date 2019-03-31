@@ -8,107 +8,8 @@
                 </strong>
             </p>
             <div class="py-2"></div>
-            <h3 class="pb-3 d-none d-md-block">
-                Setup Guides
-            </h3>
-            <div class="card text-white bg-light mb-3">
-                <h5 class="card-header">
-                    <a class="d-flex justify-content-between align-items-center w-100" data-toggle="collapse"
-                       href="#wireGuardGuide" role="button">
-                        <span>Setup WireGuard VPN</span>
-                        <i class="fas fa-chevron-down">
-                        </i>
-                    </a>
-                </h5>
-                <div id="wireGuardGuide" class="card-body collapse">
-                    <div class="card-text">
-                        <p>
-                            Works on Mac, Windows, iOS, Android and Linux.
-                        </p>
-                        <ul class="list-group">
-                            <li class="list-group-item">
-                                1. Download and install the <a
-                                        href="https://www.wireguard.com/install/">WireGuard VPN app</a>.
-                            </li>
-                            <li class="list-group-item">
-                                2. Start the Wireguard VPN app.
-                            </li>
-                            <li class="list-group-item">
-                                <p>3. Download your MeterVPN configuration by clicking the button below.</p>
-                                <div>
-                                    <button id="genWireGuardConfig" class="btn btn-primary">
-                                        Download MeterVPN configuration
-                                    </button>
-                                </div>
-                            </li>
-                            <li class="list-group-item">
-                                <p>4. Import the MeterVPN configuration into WireGuard.</p>
-                                <img style="height: 150px; width: 100%; display: block;"
-                                     src="assets/images/Wireguard_Import_Guide.png" alt="">
-                            </li>
-                            <li class="list-group-item">
-                                <p>
-                                    5. Click "Activate" on the imported MeterVPN configuration.
-                                    <span class="text-dark">(Make sure you've bought enough MeterVPN time or it won't work.)</span>
-                                </p>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="card text-white bg-light mb-3">
-                <h5 class="card-header">
-                    <a class="d-flex justify-content-between align-items-center w-100" data-toggle="collapse"
-                       href="#lightningGuide" role="button">
-                        <span>
-                            Setup Bitcoin Lightning Payments
-                        </span>
-                        <i class="fas fa-chevron-down">
-                        </i>
-                    </a>
-                </h5>
-                <div id="lightningGuide" class="card-body collapse">
-                    <div class="card-text">
-                        <p>
-                            <a href="https://bitcoin.org">Bitcoin</a> is a native currency for the Internet.
-                        </p>
-                        <p>
-                            <a href="https://lightning.engineering/technology.html">Lightning payments</a> are a way of
-                            making Bitcoin payments instant and anonymous.
-                        </p>
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">
-                                <div>
-                                    1. Buy Bitcoin on an exchange.
-                                </div>
-                                <small>
-                                    For suggestions on the best exchanges to use <a
-                                            href="https://bitcoin.org/en/exchanges">look here</a>.
-                                </small>
-                            </li>
-                            <li class="list-group-item">
-                                2. Download a Lightning payment wallet app like <a href="https://zap.jackmallers.com/">Zap</a>
-                                onto your phone or computer.
-                            </li>
-                            <li class="list-group-item">
-                                3. Open your Lightning wallet and set it up.
-                            </li>
-                            <li class="list-group-item">
-                                4. Send Bitcoin to your Lightning wallet.
-                                <div>
-                                    <small>
-                                        We recommend you send no more than $20 worth of Bitcoin to your Lightning
-                                        wallet.
-                                    </small>
-                                </div>
-                            </li>
-                            <li class="list-group-item">
-                                5. In your Lightning wallet, open a channel with a well-connected hub such as Yalls or
-                                Zap.
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+            <div class="d-lg-block d-none">
+                {{include "partials/setup-guides"}}
             </div>
         </div>
         <div class="col-lg-7 d-flex align-items-center flex-column">
@@ -170,6 +71,9 @@
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="d-lg-none w-100">
+                {{include "partials/setup-guides"}}
             </div>
         </div>
     </div>
