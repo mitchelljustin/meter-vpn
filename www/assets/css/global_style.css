@@ -19,3 +19,12 @@ hr {
     border-color: #475059;
     margin: 3.5em 0;
 }
+
+@font-face {
+    font-family: 'Orbitron';
+    src: url('/assets/fonts/orbitron-light.otf');
+}
+
+.orbitron {
+    font-family: "Orbitron";
+}

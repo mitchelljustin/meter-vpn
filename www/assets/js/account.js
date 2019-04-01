@@ -18,8 +18,9 @@ $(document).ready(async () => {
         window.location.href = "/login"
         return
     }
+    const payReqQrEl = document.getElementById("payReqQR");
     const payReqQrCode = new QRCode(
-        document.getElementById("payReqQR"),
+        payReqQrEl,
         {
             width: 192,
             height: 192,
@@ -46,10 +47,10 @@ $(document).ready(async () => {
             const payReq = e.responseText
             const payReqUrl = `lightning:${payReq}`
             const $payReqStr = $("#payReqStr")
-            $payReqStr.text("")
-            $payReqStr.append(`<a href="${payReqUrl}">${payReq}</a>`)
+            $payReqStr.text(payReq)
             payReqQrCode.clear()
             payReqQrCode.makeCode(payReqUrl)
+            $(payReqQrEl).attr("href", payReqUrl)
             $("#withPayReq").removeClass("d-none")
         }
     })
