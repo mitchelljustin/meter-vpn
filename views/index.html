@@ -1,147 +1,51 @@
 {{define "content"}}
     <div class="py-5"></div>
-    <div class="row d-flex align-items-center">
-        <div class="col-md d-none d-md-block ">
-            <img src="assets/images/logo.png" style="width: 100%;" alt="">
-        </div>
-        <div class="col-md-8">
-            <h2 class="orbitron">
-                Browse in privacy
-            </h2>
-            <div>
-                <div class="mt-4"></div>
-                <h5>
-                    Pay for VPN service with ⚡️Bitcoin Lightning micropayments
-                </h5>
-                <p>
+    <div class="row d-flex flex-md-nowrap justify-content-between align-items-start">
+        <img src="/assets/images/Account_Page.png"
+             class="rounded-lg border border-dark col-md-4 p-3"
+             alt="">
+        <div class="ml-5">
+            <h1>
+                Get high-speed Internet privacy without the monthly subscription.
+            </h1>
+            <div class="py-3"></div>
+            <h4>
+                MeterVPN is a VPN service built on Bitcoin Lightning payments.
+                It provides you with an encrypted Internet connection that you pay for by the hour.
+            </h4>
+            <div class="py-2"></div>
+            <p class="lead">
                 <span class="text-white-50">
-                    24 hours of VPN service:
+                    Price per hour of VPN service:
                 </span>
-                        <span class="text-gold" data-toggle="tooltip" data-placement="bottom"
-                              title="100 millionths of a Bitcoin">
-                    <span id="24hPriceSats">~</span> sat
+                <span class="text-gold" data-toggle="tooltip" data-placement="bottom"
+                      title="100 millionths of a Bitcoin">
+                    <span id="1hPriceSats">~</span> sat
                 </span>
-                        <span class="text-white-50">
-                    ($<span id="24hPriceUsd">~</span>
+                <span class="text-white-50">
+                    ($<span id="1hPriceUsd">~</span>
                     USD)
                 </span>
-                </p>
-                <div class="mt-4">
-                    <a class="btn btn-lg btn-success" href="create-account">Get Anonymous Account</a>
-                    <a class="btn btn-lg btn-secondary" href="login">Log In</a>
-                </div>
-            </div>
+            </p>
         </div>
     </div>
     <div class="py-5"></div>
-    <hr>
-    <div class="row py-3">
-        <div class="col">
-            <h3 class="orbitron mb-4">
-                Pay only for the privacy you need.
-            </h3>
-            <p>
-                No monthly subscription. Buy as little as 1 hour of VPN service.
-            </p>
-        </div>
-        <div class="col-md-3"></div>
+    <div class="row container bg-info py-4 rounded-lg d-flex justify-content-between align-items-center">
+        <h3 class="m-0 ml-3">
+            Watch videos anonymously
+        </h3>
+        <a class="btn btn-lg btn-success" style="font-size: 2em;" href="create-account">
+            Get Anonymous Account
+            <i class="fas fa-long-arrow-alt-right"></i>
+        </a>
     </div>
-    <hr>
-    <div class="row py-3">
-        <div class="col-md-3"></div>
-        <div class="col text-right">
-            <h3 class="orbitron mb-4">
-                No emails, no usernames.
-            </h3>
-            <p>
-                We store a randomly generated Account ID that is not linked to your identity.
-            </p>
-            <p>
-                Lightning payments are also anonymous, so MeterVPN gives you full Internet privacy.
-            </p>
-        </div>
-    </div>
-    <hr>
-    <div class="row py-3">
-        <div class="col">
-            <h3 class="orbitron mb-4">
-                Protection against tracking and surveillance.
-            </h3>
-            <p>
-                We don't store any logs.
-            </p>
-            <p>
-                We use the WireGuard protocol, a novel VPN protocol built with strong encryption and superfast
-                speeds.
-            </p>
-        </div>
-        <div class="col-md-3"></div>
-    </div>
-    <hr class="my-5">
-    <h3 class="mb-5">
-        Comparison with other VPNs
-    </h3>
-    <table class="table table-light">
-        <thead>
-        <tr>
-            <th scope="col"></th>
-            <th scope="col">Subscription VPN</th>
-            <th scope="col">Free VPN</th>
-            <th scope="col">MeterVPN</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>
-                Price
-            </td>
-            <td class="text-warning">
-                Monthly Subscription
-            </td>
-            <td class="text-success">
-                Free
-            </td>
-            <td class="text-success">
-                Pay-as-you-go
-            </td>
-        </tr>
-        <tr>
-            <td>
-                Anonymity
-            </td>
-            <td class="text-warning">
-                Low (email and payment information)
-            </td>
-            <td class="text-success">
-                High
-            </td>
-            <td class="text-success">
-                High
-            </td>
-        </tr>
-        <tr>
-            <td>
-                Speed
-            </td>
-            <td class="text-success">
-                High
-            </td>
-            <td class="text-warning">
-                Low
-            </td>
-            <td class="text-success">
-                High
-            </td>
-        </tr>
-        </tbody>
-    </table>
     <script>
         $(document).ready(async () => {
             $('[data-toggle="tooltip"]').tooltip()
 
             const prices = await $.getJSON("/price")
-            $("#24hPriceSats").text(prices.satoshi.day.toFixed(0))
-            $("#24hPriceUsd").text(prices.usd.day.toFixed(5))
+            $("#1hPriceSats").text(prices.satoshi.hour.toFixed(1))
+            $("#1hPriceUsd").text(prices.usd.hour.toFixed(5))
         })
     </script>
 {{end}}

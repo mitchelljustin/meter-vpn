@@ -92,7 +92,7 @@ type pageInfo struct {
 var Pages = map[string]pageInfo{
 	"": {
 		File:  "index",
-		Title: "MeterVPN - Anonymous, pro-rated VPN",
+		Title: "MeterVPN - Pay-as-you-go VPN",
 	},
 	"account": {
 		File:  "account",

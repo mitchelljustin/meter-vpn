@@ -1,10 +1,15 @@
 {{if .LoggedIn}}
-    <a class="nav-link ml-auto" href="/account">My Account</a>
+    <a class="nav-link btn btn-secondary btn-lg ml-auto mr-3" href="/account">
+        My Account
+    </a>
+    <button class="nav-link btn btn-primary btn-lg" data-action="logout">
+        Logout
+    </button>
 {{else}}
-    <a class="nav-link ml-auto" href="/login">Log In</a>
-{{end}}
-<a class="nav-link" href="/faq">FAQ</a>
-<a class="nav-link" href="/about">About</a>
-{{if .LoggedIn}}
-    <button class="btn btn-link nav-link" data-action="logout">Logout</button>
+    <a class="nav-link btn btn-secondary btn-lg ml-auto mr-3" href="/login">
+        Login
+    </a>
+    <a class="nav-link btn btn-primary btn-lg" href="/create-account">
+        Create Account
+    </a>
 {{end}}
