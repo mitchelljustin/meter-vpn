@@ -7,6 +7,10 @@ small {
     color: rgba(255, 255, 255, 0.5);
 }
 
+.bg-gold {
+    background: #d9a357;
+}
+
 .text-gold {
     color: #d9a357;
 }

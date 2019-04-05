@@ -46,8 +46,7 @@ $(document).ready(async () => {
         } catch (e) {
             const payReq = e.responseText
             const payReqUrl = `lightning:${payReq}`
-            const $payReqStr = $("#payReqStr")
-            $payReqStr.text(payReq)
+            $("#payReqStr").text(payReq)
             payReqQrCode.clear()
             payReqQrCode.makeCode(payReqUrl)
             $(payReqQrEl).attr("href", payReqUrl)
@@ -77,7 +76,7 @@ $(document).ready(async () => {
         $usdCost.text(`$${usd.toFixed(4)}`)
     })
     await refreshDuration()
-    setTimeout(refreshDuration, 1000 * 60)
+    setInterval(refreshDuration, 1000 * 1)
 
     $("#genWireGuardConfig").click(async () => {
         const {publicKey, secretKey} = nacl.box.keyPair()
@@ -91,7 +90,7 @@ $(document).ready(async () => {
         })
         const zip = new JSZip()
         const {ipv4} = await $.getJSON("/peer/ip")
-        zip.file(`metervpn-toronto-ca-${accountId}.conf`, configTemplateIPv4({
+        zip.file(`MeterVPN-toronto-ca.conf`, configTemplateIPv4({
             secretKey: toBase64(secretKey),
             ipv4,
         }))

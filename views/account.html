@@ -12,82 +12,88 @@
                 {{include "partials/setup-guides"}}
             </div>
         </div>
-        <div class="col-lg-7 d-flex align-items-center flex-column">
-            <img src="/assets/images/meter.png" alt="">
-            <div class="w-75 d-flex justify-content-between">
-                <div class="text-center">
-                    <div class="display-1" id="durationDays">0</div>
-                    <p>days</p>
-                </div>
-                <div class="text-center">
-                    <div class="display-1" id="durationHours">0</div>
-                    <p>hours</p>
-                </div>
-                <div class="text-center">
-                    <div class="display-1" id="durationMinutes">0</div>
-                    <p>minutes</p>
-                </div>
-            </div>
-            <h5 class="text-right py-3">of VPN service left</h5>
-            <div class="w-100">
-                <h5 class="pt-4">
-                    Add time:
-                </h5>
-                <div class="input-group input-group-lg">
-                    <select class="custom-select" id="durationSelect">
-                        <option value="null" selected>Choose duration...</option>
-                        <option value=1>1 hour</option>
-                        <option value=3>3 hours</option>
-                        <option value=6>6 hours</option>
-                        <option value=24>1 day</option>
-                        <option value=72>3 days</option>
-                        <option value=168>1 week</option>
-                        <option value=720>30 days</option>
-                    </select>
-                    <div class="input-group-append">
-                        <button class="btn btn-success" type="button" id="genPayReq">Request</button>
+        <div class="col-lg-7">
+            <div class="row align-items-center flex-column">
+                <h3 class="col-10 py-3">
+                    Time left
+                </h3>
+                <img src="/assets/images/meter.png" class="col-md-6 col-9" alt="">
+                <div class="col-md-8 col-10 d-flex justify-content-between">
+                    <div class="text-center">
+                        <div class="display-2" id="durationDays">0</div>
+                        <p>days</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="display-2" id="durationHours">0</div>
+                        <p>hours</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="display-2" id="durationMinutes">0</div>
+                        <p>minutes</p>
                     </div>
                 </div>
-                <div class="row my-4">
-                    <div class="col d-inline-flex justify-content-between align-items-center text-white flex-column flex-md-row">
-                        <h5>Price: </h5>
-                        <div class="d-md-none my-1"></div>
-                        <h5 class="text-gold" data-toggle="tooltip" data-placement="bottom"
-                                  title="100 millionths of a Bitcoin">
-                            <span id="satCost">~</span> sat
+                <div class="py-3"></div>
+                <div class="col-md-10">
+                    <div class="px-3 border border-dark rounded">
+                        <h5 class="pt-4">
+                            Add time:
                         </h5>
-                        <h5 class="d-none d-md-inline">/</h5>
-                        <div class="d-md-none my-1"></div>
-                        <h5><span id="btcCost">~</span> BTC</h5>
-                        <h5 class="d-none d-md-inline">/</h5>
-                        <div class="d-md-none my-1"></div>
-                        <h5><span id="usdCost">~</span> USD</h5>
-                    </div>
-                </div>
-                <div id="withPayReq" class="d-none my-4">
-                    <div class="d-flex flex-column align-items-center">
-                        <h4 class="my-3 text-white">Lightning payment request: </h4>
-                        <div class="py-2"></div>
-                        <div>
-                            <a id="payReqQR">
-                            </a>
+                        <div class="input-group input-group-lg">
+                            <select class="custom-select" id="durationSelect">
+                                <option value="null" selected>Choose duration...</option>
+                                <option value=1>1 hour</option>
+                                <option value=3>3 hours</option>
+                                <option value=6>6 hours</option>
+                                <option value=24>1 day</option>
+                                <option value=72>3 days</option>
+                                <option value=168>1 week</option>
+                                <option value=720>30 days</option>
+                            </select>
+                            <div class="input-group-append">
+                                <button class="btn btn-success" type="button" id="genPayReq">Request</button>
+                            </div>
                         </div>
-                        <div class="py-2"></div>
-                        <div class="bg-light ml-3 w-100">
-                            <div id="payReqStr" class="text-wrap">
+                        <div class="row my-4">
+                            <div class="col d-inline-flex justify-content-between align-items-center text-white flex-column flex-md-row">
+                                <h5>Price: </h5>
+                                <div class="d-md-none my-1"></div>
+                                <h5 class="text-gold" data-toggle="tooltip" data-placement="bottom"
+                                    title="100 millionths of a Bitcoin">
+                                    <span id="satCost">~</span> sat
+                                </h5>
+                                <h5 class="d-none d-md-inline">/</h5>
+                                <div class="d-md-none my-1"></div>
+                                <h5><span id="btcCost">~</span> BTC</h5>
+                                <h5 class="d-none d-md-inline">/</h5>
+                                <div class="d-md-none my-1"></div>
+                                <h5><span id="usdCost">~</span> USD</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="withPayReq" class="d-none my-3 p-3 bg-primary rounded-lg shadow">
+                        <div>
+                            <h4 class="row col-12 mb-4">Payment request: </h4>
+                            <div class="row">
+                                <div class="col-md-6 ">
+                                    <a class="mb-3" id="payReqQR">
+                                    </a>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="text-wrap text-white-50" id="payReqStr">
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="d-lg-none w-100">
-                {{include "partials/setup-guides"}}
+                <div class="d-lg-none w-100">
+                    {{include "partials/setup-guides"}}
+                </div>
             </div>
         </div>
     </div>
     <style>
         #payReqStr {
-            width: 100%;
             height: fit-content;
             overflow-wrap: break-word;
         }

@@ -2,6 +2,7 @@ package daemon
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 )
@@ -28,9 +29,9 @@ type PricesSnapshot struct {
 }
 
 type coindeskCurrentPrice struct {
-	Bpi struct {
-		USD struct {
-			RateFloat float64 `json:"rate_float"`
+	Bpi *struct {
+		USD *struct {
+			RateFloat *float64 `json:"rate_float"`
 		} `json:"USD"`
 	}
 }
@@ -49,7 +50,10 @@ func (pt *PriceTracker) UpdateLatestRate() error {
 	if err := json.NewDecoder(resp.Body).Decode(&curPrice); err != nil {
 		return err
 	}
-	pt.LatestUSDBTC = curPrice.Bpi.USD.RateFloat
+	if curPrice.Bpi == nil || curPrice.Bpi.USD == nil || curPrice.Bpi.USD.RateFloat == nil {
+		return errors.New("got nil from JSON decoded BTC price")
+	}
+	pt.LatestUSDBTC = *curPrice.Bpi.USD.RateFloat
 	return nil
 }
 
