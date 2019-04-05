@@ -35,6 +35,8 @@ $(document).ready(async () => {
         if (selectedDuration === "null") {
             return
         }
+        $("#requesting").show()
+        $("#notRequesting").hide()
         const duration = String(3600 * parseInt(selectedDuration))
         try {
             await $.ajax({
@@ -46,12 +48,22 @@ $(document).ready(async () => {
         } catch (e) {
             const payReq = e.responseText
             const payReqUrl = `lightning:${payReq}`
-            $("#payReqStr").text(payReq)
+
+            const $copyPayReq = $("#copyPayReq")
+            $copyPayReq.attr("data-clipboard-text", payReq)
+            const clip = new ClipboardJS("#copyPayReq")
+            console.log(clip)
+            clip.on("success", console.log)
+            clip.on("error", console.error)
+
             payReqQrCode.clear()
             payReqQrCode.makeCode(payReqUrl)
             $(payReqQrEl).attr("href", payReqUrl)
-            $("#withPayReq").removeClass("d-none")
+
+            $("#payReqModal").modal()
         }
+        $("#requesting").hide()
+        $("#notRequesting").show()
     })
 
     const $btcCost = $("#btcCost")
@@ -76,7 +88,7 @@ $(document).ready(async () => {
         $usdCost.text(`$${usd.toFixed(4)}`)
     })
     await refreshDuration()
-    setInterval(refreshDuration, 1000 * 1)
+    setInterval(refreshDuration, 1000 * 15)
 
     $("#genWireGuardConfig").click(async () => {
         const {publicKey, secretKey} = nacl.box.keyPair()
