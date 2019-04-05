@@ -49,17 +49,15 @@ $(document).ready(async () => {
             const payReq = e.responseText
             const payReqUrl = `lightning:${payReq}`
 
-            const $copyPayReq = $("#copyPayReq")
-            $copyPayReq.attr("data-clipboard-text", payReq)
+            $("#payReqStr").val(payReq)
             const clip = new ClipboardJS("#copyPayReq")
             console.log(clip)
-            clip.on("success", console.log)
+            clip.on("success", (e) => console.log("success", e))
             clip.on("error", console.error)
 
             payReqQrCode.clear()
             payReqQrCode.makeCode(payReqUrl)
-            $(payReqQrEl).attr("href", payReqUrl)
-
+            $("#payReqLink").attr("href", payReqUrl)
             $("#payReqModal").modal()
         }
         $("#requesting").hide()

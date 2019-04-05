@@ -108,14 +108,22 @@
                                 Scan the QR code below with your mobile Lightning wallet.
                             </li>
                             <li>
-                                Click on the QR code to automatically open your local Lightning wallet.
+                                Click on the Payment Link to automatically open your local Lightning wallet.
                             </li>
                             <li>
                                 Copy the raw payment request and paste it into your Lightning wallet.
                             </li>
                         </ol>
-                        <a id="payReqQR"></a>
-                        <button id="copyPayReq" class="btn btn-primary btn-lg my-4">
+                        <div class="p-2 rounded bg-white">
+                            <a id="payReqQR">
+
+                            </a>
+                        </div>
+                        <a class="btn btn-link btn-lg mb-3 mt-4" href="" id="payReqLink">
+                            Payment Link
+                        </a>
+                        <input id="payReqStr" type="text" style="position: absolute; top: -100000px;">
+                        <button id="copyPayReq" class="btn btn-secondary btn-lg mb-4" data-clipboard-target="#payReqStr">
                             Copy to clipboard <i class="fas fa-copy"></i>
                         </button>
                     </div>
@@ -129,11 +137,6 @@
         </div>
     </div>
     <style>
-        #payReqStr {
-            height: fit-content;
-            overflow-wrap: break-word;
-        }
-
         #payReqQR {
             width: 192px;
             height: 192px;
