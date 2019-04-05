@@ -62,6 +62,7 @@ func NewParkingMeter(store PeerStore, lndParams LNDParams) (*ParkingMeter, error
 type pendingExtension struct {
 	AccountID string
 	Duration  time.Duration
+	Completed chan bool
 }
 
 type ExtensionJSON struct {
@@ -129,6 +130,7 @@ func (pm *ParkingMeter) Run() {
 		if err = pm.store.SavePeer(peer); err != nil {
 			log.Printf("Error saving peer: %v", err)
 		}
+		extension.Completed <- true
 		delete(pm.pendingInvoices, payReq)
 	}
 }
@@ -162,8 +164,30 @@ func (pm *ParkingMeter) HandleExtensionRequest(ctx *gin.Context) {
 	pm.pendingInvoices[payReq] = pendingExtension{
 		AccountID: peer.AccountID,
 		Duration:  duration,
+		Completed: make(chan bool),
 	}
 	ctx.String(402, payReq)
+}
+
+func (pm *ParkingMeter) HandleExtensionCompletedRequest(ctx *gin.Context) {
+	payReq := ctx.Query("payReq")
+	var pending pendingExtension
+	var ok bool
+	if pending, ok = pm.pendingInvoices[payReq]; !ok {
+		ctx.Status(404)
+		return
+	}
+	timeout := time.NewTimer(time.Minute * 1)
+	select {
+	case <-pending.Completed:
+		ctx.JSON(200, gin.H{
+			"result": "completed",
+		})
+	case <-timeout.C:
+		ctx.JSON(200, gin.H{
+			"result": "timeout",
+		})
+	}
 }
 
 func (pm *ParkingMeter) HandleGetPeerRequest(ctx *gin.Context) {

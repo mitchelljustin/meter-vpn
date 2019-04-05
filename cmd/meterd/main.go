@@ -82,6 +82,7 @@ func createApiRoutes(router *gin.Engine, meter *daemon.ParkingMeter) {
 	router.GET("/peer/ip", meter.HandleIPRequest)
 	router.POST("/peer/pubkey", meter.HandleSetPubkeyRequest)
 	router.POST("/peer/extend", meter.HandleExtensionRequest)
+	router.GET("/peer/extend/completed", meter.HandleExtensionCompletedRequest)
 }
 
 type pageInfo struct {
