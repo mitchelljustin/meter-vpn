@@ -99,39 +99,41 @@ func (pm *ParkingMeter) loadPeerFromCookie(ctx *gin.Context) (*Peer, bool) {
 }
 
 func (pm *ParkingMeter) Run() {
-	sub, err := pm.lnClient.SubscribeInvoices(pm.ctx, &lnrpc.InvoiceSubscription{
-		AddIndex:    0,
-		SettleIndex: 0,
-	})
-	if err != nil {
-		log.Fatalf("Could not subscribe to invoices: %v", err)
-	}
 	for {
-		invoice, err := sub.Recv()
+		sub, err := pm.lnClient.SubscribeInvoices(pm.ctx, &lnrpc.InvoiceSubscription{
+			AddIndex:    0,
+			SettleIndex: 0,
+		})
 		if err != nil {
-			log.Printf("Error receiving invoice, exiting: %v", err)
-			return
+			log.Fatalf("Could not subscribe to invoices: %v", err)
 		}
-		if invoice.State != lnrpc.Invoice_SETTLED {
-			continue
+		for {
+			invoice, err := sub.Recv()
+			if err != nil {
+				log.Printf("Error receiving invoice, restarting: %v", err)
+				break
+			}
+			if invoice.State != lnrpc.Invoice_SETTLED {
+				continue
+			}
+			payReq := invoice.PaymentRequest
+			var extension pendingExtension
+			var ok bool
+			if extension, ok = pm.pendingInvoices[payReq]; !ok {
+				continue
+			}
+			log.Printf("Adding %v of VPN time to %v", extension.Duration, extension.AccountID)
+			peer, err := pm.store.GetPeer(extension.AccountID)
+			if err != nil {
+				continue
+			}
+			peer.AddAllowance(extension.Duration)
+			if err = pm.store.SavePeer(peer); err != nil {
+				log.Printf("Error saving peer: %v", err)
+			}
+			extension.Completed <- true
+			delete(pm.pendingInvoices, payReq)
 		}
-		payReq := invoice.PaymentRequest
-		var extension pendingExtension
-		var ok bool
-		if extension, ok = pm.pendingInvoices[payReq]; !ok {
-			continue
-		}
-		log.Printf("Adding %v of VPN time to %v", extension.Duration, extension.AccountID)
-		peer, err := pm.store.GetPeer(extension.AccountID)
-		if err != nil {
-			continue
-		}
-		peer.AddAllowance(extension.Duration)
-		if err = pm.store.SavePeer(peer); err != nil {
-			log.Printf("Error saving peer: %v", err)
-		}
-		extension.Completed <- true
-		delete(pm.pendingInvoices, payReq)
 	}
 }
 

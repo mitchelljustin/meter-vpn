@@ -74,7 +74,8 @@ $(document).ready(async () => {
                 $("#beforePayment").hide()
                 $("#afterPayment").show()
                 refreshDuration()
-                setTimeout(() => $payReqModal.modal("hide"), 4000)
+                $("#durationSelect").val("null")
+                setTimeout(() => $payReqModal.modal("hide"), 3000)
                 return
             }
             setTimeout(checkCompleted, 0)
