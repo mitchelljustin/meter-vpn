@@ -25,13 +25,8 @@ $(document).ready(async () => {
         window.location.href = "/login"
         return
     }
-    const payReqQrEl = document.getElementById("payReqQR");
     const payReqQrCode = new QRCode(
-        payReqQrEl,
-        {
-            width: 192,
-            height: 192,
-        },
+        document.getElementById("payReqQR"),
     )
 
     const $durationSelect = $("#durationSelect");
@@ -133,7 +128,7 @@ $(document).ready(async () => {
     await refreshDuration()
     setInterval(refreshDuration, 1000 * 15)
 
-    $("#genWireGuardConfig").click(async () => {
+    $(".genWireGuardConfig").click(async () => {
         const {publicKey, secretKey} = nacl.box.keyPair()
         await $.ajax({
             type: "POST",

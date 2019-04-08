@@ -8,8 +8,105 @@
                 </strong>
             </p>
             <div class="py-2"></div>
-            <div class="d-lg-block d-none">
-                {{include "partials/setup-guides"}}
+            <div>
+                <button class="genWireGuardConfig btn btn-primary btn-lg mb-3">
+                    Download VPN config
+                    <i class="ml-2 fas fa-download"></i>
+                </button>
+                <div class="card text-white bg-light mb-3">
+                    <h5 class="card-header">
+                        <a class="d-flex justify-content-between align-items-center w-100" data-toggle="collapse"
+                           href="#wireGuardGuide" role="button">
+                            <span>Setup WireGuard VPN</span>
+                            <i class="fas fa-chevron-down">
+                            </i>
+                        </a>
+                    </h5>
+                    <div id="wireGuardGuide" class="card-body collapse">
+                        <div class="card-text">
+                            <p>
+                                Works on Mac, Windows, iOS, Android and Linux.
+                            </p>
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    1. Download and install the <a
+                                            href="https://www.wireguard.com/install/">WireGuard VPN app</a>.
+                                </li>
+                                <li class="list-group-item">
+                                    2. Start the Wireguard VPN app.
+                                </li>
+                                <li class="list-group-item">
+                                    3. Click button "Download VPN config" above to download your WireGuard VPN configuration.
+                                </li>
+                                <li class="list-group-item">
+                                    <p>4. Import the configuration ZIP file into WireGuard.</p>
+                                    <img style="height: 150px; width: 100%; display: block;"
+                                         src="assets/images/Wireguard_Import_Guide.png" alt="">
+                                </li>
+                                <li class="list-group-item">
+                                    5. Click "Activate" on the imported VPN configuration.
+                                    <div>
+                                        <small>Make sure you've bought enough VPN time or it won't work.</small>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card text-white bg-light mb-3">
+                    <h5 class="card-header">
+                        <a class="d-flex justify-content-between align-items-center w-100" data-toggle="collapse"
+                           href="#lightningGuide" role="button">
+                        <span>
+                            Setup Lightning Payments
+                        </span>
+                            <i class="fas fa-chevron-down">
+                            </i>
+                        </a>
+                    </h5>
+                    <div id="lightningGuide" class="card-body collapse">
+                        <div class="card-text">
+                            <p>
+                                <a href="https://bitcoin.org">Bitcoin</a> is a native currency for the Internet.
+                            </p>
+                            <p>
+                                <a href="https://lightning.engineering/technology.html">Lightning Network</a>
+                                is a Bitcoin extension that makes payments instant and anonymous.
+                            </p>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">
+                                    <div>
+                                        1. Buy Bitcoin on an exchange.
+                                    </div>
+                                    <small>
+                                        For suggestions on the best exchanges to use <a
+                                                href="https://bitcoin.org/en/exchanges">look here</a>.
+                                    </small>
+                                </li>
+                                <li class="list-group-item">
+                                    2. Download a Lightning payment wallet app like <a href="https://zap.jackmallers.com/">Zap</a>
+                                    onto your phone or computer.
+                                </li>
+                                <li class="list-group-item">
+                                    3. Open your Lightning wallet and set it up.
+                                </li>
+                                <li class="list-group-item">
+                                    4. Send Bitcoin to your Lightning wallet.
+                                    <div>
+                                        <small>
+                                            We recommend you send no more than $20 worth of Bitcoin to your Lightning
+                                            wallet.
+                                        </small>
+                                    </div>
+                                </li>
+                                <li class="list-group-item">
+                                    5. In your Lightning wallet, open a channel with a well-connected hub such as Yalls or
+                                    Zap.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="col-lg-7">
@@ -77,14 +174,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="d-lg-none mt-5 col-md-10">
-                    {{include "partials/setup-guides"}}
-                </div>
             </div>
         </div>
     </div>
 
-    <div id="payReqModal" class="modal" tabindex="-1" role="dialog">
+    <div id="payReqModal" class="modal fade" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -108,9 +202,11 @@
                             <div class="mt-4 p-2 rounded bg-white">
                                 <div id="payReqQR"></div>
                             </div>
-                            <a class="btn btn-link btn-lg my-2" href="" id="payReqLink">
-                                Pay with App ⚡️
-                            </a>
+                            <div class="my-2">
+                                <a class="btn btn-link btn-lg" href="" id="payReqLink">
+                                    Open in App ⚡️
+                                </a>
+                            </div>
                             <input id="payReqStr" type="text" style="position: absolute; top: -100000px;">
                             <button id="copyPayReq" class="btn btn-secondary btn-lg mb-4"
                                     data-clipboard-target="#payReqStr">
@@ -142,11 +238,5 @@
             </div>
         </div>
     </div>
-    <style>
-        #payReqQR {
-            width: 192px;
-            height: 192px;
-        }
-    </style>
     <script src="assets/js/account.js"></script>
 {{end}}
