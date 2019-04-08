@@ -42,10 +42,10 @@ func priceToSatoshi(priceUsd, rate float64) float64 {
 
 func (pt *PriceTracker) UpdateLatestRate() error {
 	resp, err := http.Get("https://api.coindesk.com/v1/bpi/currentprice/USD.json")
-	defer resp.Body.Close()
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 	var curPrice coindeskCurrentPrice
 	if err := json.NewDecoder(resp.Body).Decode(&curPrice); err != nil {
 		return err

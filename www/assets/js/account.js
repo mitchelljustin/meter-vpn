@@ -11,6 +11,13 @@ async function refreshDuration() {
     $("#durationMinutes").text(mins)
 }
 
+const MULTIPLIERS = {
+    m: 0.001,
+    u: 0.000001,
+    n: 0.000000001,
+    p: 0.000000000001,
+}
+
 $(document).ready(async () => {
     $('[data-toggle="tooltip"]').tooltip()
     const accountId = Cookies.get("accountId")
@@ -30,6 +37,50 @@ $(document).ready(async () => {
     const $durationSelect = $("#durationSelect");
 
     $("#accountId").text(accountId)
+
+    function completePayment({duration, payReq}) {
+        $("#beforePayment").show()
+        $("#afterPayment").hide()
+        const match = /^ln(tb|bc)(\d+[munp])1[0-9a-z]+/.exec(payReq)
+        let satoshis
+        if (!match) {
+            console.error(payReq)
+            satoshis = "???"
+        } else {
+            const amtStr = match[2].split("")
+            const mulStr = amtStr[amtStr.length - 1]
+            const unitsStr = amtStr.slice(0, amtStr.length - 1).join("")
+            const mul = MULTIPLIERS[mulStr]
+            const units = parseInt(unitsStr, 10)
+            satoshis = 1e8 * mul * units
+        }
+        const payReqUrl = `lightning:${payReq}`
+        const hours = Math.round(duration / 3600)
+
+        $("#payReqStr").val(payReq)
+        new ClipboardJS("#copyPayReq")
+
+        payReqQrCode.clear()
+        payReqQrCode.makeCode(payReqUrl)
+        $("#payReqLink").attr("href", payReqUrl)
+        $(".requestHours").text(hours)
+        $("#requestSatoshi").text(satoshis)
+        const $payReqModal = $("#payReqModal");
+        $payReqModal.modal("show")
+
+        setTimeout(async function checkCompleted() {
+            const {result} = await $.getJSON("/peer/extend/completed", {payReq})
+            if (result === "completed") {
+                $("#beforePayment").hide()
+                $("#afterPayment").show()
+                setTimeout(() => $payReqModal.modal("hide"), 4000)
+                $()
+                return
+            }
+            setTimeout(checkCompleted, 0)
+        }, 0)
+    }
+
     $("#genPayReq").click(async () => {
         const selectedDuration = $durationSelect.val()
         if (selectedDuration === "null") {
@@ -46,19 +97,12 @@ $(document).ready(async () => {
                 data: JSON.stringify({duration}),
             })
         } catch (e) {
-            const payReq = e.responseText
-            const payReqUrl = `lightning:${payReq}`
-
-            $("#payReqStr").val(payReq)
-            const clip = new ClipboardJS("#copyPayReq")
-            console.log(clip)
-            clip.on("success", (e) => console.log("success", e))
-            clip.on("error", console.error)
-
-            payReqQrCode.clear()
-            payReqQrCode.makeCode(payReqUrl)
-            $("#payReqLink").attr("href", payReqUrl)
-            $("#payReqModal").modal()
+            if (e.status === 402) {
+                const payReq = e.responseText
+                completePayment({duration, payReq})
+            } else {
+                console.error(e)
+            }
         }
         $("#requesting").hide()
         $("#notRequesting").show()

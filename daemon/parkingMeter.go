@@ -109,8 +109,8 @@ func (pm *ParkingMeter) Run() {
 	for {
 		invoice, err := sub.Recv()
 		if err != nil {
-			log.Printf("Error receiving invoice: %v", err)
-			continue
+			log.Printf("Error receiving invoice, exiting: %v", err)
+			return
 		}
 		if invoice.State != lnrpc.Invoice_SETTLED {
 			continue
