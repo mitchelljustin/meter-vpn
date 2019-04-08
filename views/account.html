@@ -77,7 +77,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="d-lg-none w-100 mt-5">
+                <div class="d-lg-none mt-5 col-md-10">
                     {{include "partials/setup-guides"}}
                 </div>
             </div>
@@ -103,12 +103,13 @@
                                 <span class="requestHours"></span>
                                 hours of VPN for
                                 <span><span id="requestSatoshi"></span> satoshi.</span>
+                                *
                             </div>
                             <div class="mt-4 p-2 rounded bg-white">
                                 <div id="payReqQR"></div>
                             </div>
                             <a class="btn btn-link btn-lg my-2" href="" id="payReqLink">
-                                Payment Link
+                                Pay with App ⚡️
                             </a>
                             <input id="payReqStr" type="text" style="position: absolute; top: -100000px;">
                             <button id="copyPayReq" class="btn btn-secondary btn-lg mb-4"
@@ -124,29 +125,19 @@
                                 Payment completed
                             </p>
                             <p class="text-white-50">
-                                Credited your account with <span class="requestHours"></span> hours of VPN service.
+                                Added <span class="requestHours"></span> hours of VPN time to your account.
                             </p>
                         </div>
-                        <p class="mt-4">
-                            Use one of the following options:
-                        </p>
-                        <ol class="mb-4 col-9">
-                            <li>
-                                Scan the QR code with your mobile Lightning wallet.
-                            </li>
-                            <li>
-                                Click on the Payment Link to automatically open your local Lightning wallet.
-                            </li>
-                            <li>
-                                Copy the raw payment request and paste it into your Lightning wallet.
-                            </li>
-                        </ol>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <p class="w-100 text-center text-white-50">
-                        This dialog will disappear once the payment is completed.
-                    </p>
+                    <div class="w-100 text-center text-white-50">
+                        <p>
+                            * Dialog will disappear once payment is completed.
+                            <br>
+                            VPN time is added to your account immediately upon receipt.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
