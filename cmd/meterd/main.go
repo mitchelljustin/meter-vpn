@@ -105,15 +105,7 @@ var Pages = map[string]pageInfo{
 	},
 	"create-account": {
 		File:  "create-account",
-		Title: "MeterVPN - Create account",
-	},
-	"faq": {
-		File:  "faq",
-		Title: "MeterVPN - Frequently Asked Questions",
-	},
-	"about": {
-		File:  "about",
-		Title: "MeterVPN - About",
+		Title: "MeterVPN - Get New Account",
 	},
 }
 

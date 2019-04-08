@@ -1,61 +1,38 @@
 {{define "content"}}
-<div class="row">
-    <div class="col"></div>
-    <div class="col-9">
-        <h2 class="row">
-            <div class="col">Create account</div>
-        </h2>
-        <hr>
-
-        <div class="row">
-            <div class="col">
-                <p>
-                    1. Click the button below to get an anonymous Account ID. You should back it up somewhere safe.
-                </p>
-                <div class="row">
-                    <div class="col">
-                        <button id="getNewAccountId" class="btn btn-success">Get Account ID</button>
-
-                    </div>
-                    <div class="col-9">
-                        <div id="withAccount" class="d-none">
-                            Account ID: <strong id="accountId"></strong>
-                            <p>
-                                <small>✓ Saved to browser</small>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="row">
+        <div class="col"></div>
+        <div class="col-md-8">
+            <h2>
+                Create Account
+            </h2>
+            <hr>
+            <button id="generateAccountId" class="btn btn-success btn-lg">
+                Generate Account ID
+            </button>
+            <p class="lead">
+                You start with zero VPN time. Buy VPN time on your Account page.
+            </p>
+            <p class="lead">
+                Guide to set up  WireGuard VPN
+            </p>
+            <p class="lead">
+                Guide to set up Lightning payments
+            </p>
         </div>
-        <div class="row mt-4">
-            <div class="col">
-                <p>
-                    2. Log in to your new account
-                </p>
-                <p>
-                    <a id="login" href="account" class="btn btn-primary btn-lg d-none">
-                        Log In
-                    </a>
-                </p>
-            </div>
-        </div>
+        <div class="col"></div>
     </div>
-    <div class="col">
-    </div>
-</div>
-<script>
-    $(document).ready(async () => {
-        const $accountId = $("#accountId");
-        const $getNewAccountId = $("#getNewAccountId");
-        $getNewAccountId.click(async () => {
-            const {accountId} = await $.post("/peer")
-            Cookies.set("accountId", accountId)
-            $("#withAccount").removeClass("d-none")
-            $accountId.text(accountId)
-            $getNewAccountId.attr("disabled", true)
-            $("#login").removeClass("d-none")
+    <script>
+        $(document).ready(() => {
+            if (Cookies.get("accountId")) {
+                window.location.href = "/account"
+            }
+            $("#generateAccountId").click(async () => {
+                const {accountId} = await $.post("/peer")
+                Cookies.set("accountId", accountId)
+                $(".withAccount").show()
+                $("#accountId").text(accountId)
+                $("#generateAccountId").attr("disabled", true)
+            })
         })
-    })
-</script>
+    </script>
 {{end}}
