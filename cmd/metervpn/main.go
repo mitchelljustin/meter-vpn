@@ -13,6 +13,7 @@ import (
 	"github.com/ulule/limiter/v3/drivers/store/memory"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -21,12 +22,21 @@ func main() {
 	dbPath := flag.String("f", "data/meter.db", "database path")
 	watchInterval := flag.Uint("i", 15, "watch interval in seconds")
 	debugMode := flag.Bool("d", false, "debug mode")
+	logPath := flag.String("l", "-", "log path")
 	flag.Parse()
 
 	if *debugMode {
 		gin.SetMode(gin.DebugMode)
 	} else {
 		gin.SetMode(gin.ReleaseMode)
+	}
+	if *logPath != "-" {
+		logFile, err := os.OpenFile(*logPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		if err != nil {
+			log.Fatalf("error opening file: %v", err)
+		}
+		defer logFile.Close()
+		log.SetOutput(logFile)
 	}
 
 	db, err := gorm.Open("sqlite3", *dbPath)

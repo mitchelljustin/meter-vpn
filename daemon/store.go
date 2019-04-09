@@ -120,7 +120,7 @@ func (store *SQLitePeerStore) GetNewIPs() (ips [2]net.IP, err error) {
 		Last(&lastPeer).
 		Error
 	if err == gorm.ErrRecordNotFound {
-		ips[0] = net.ParseIP("10.0.0.2").To4()
+		ips[0] = net.ParseIP("10.0.0.3").To4()
 		err = nil
 		return
 	} else if err != nil {
