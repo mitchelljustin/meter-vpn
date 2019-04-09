@@ -37,6 +37,7 @@
                 $(".withAccount").show()
                 $("#accountId").text(accountId)
                 $("#generateAccountId").attr("disabled", true)
+                setTimeout(() => window.location.href = "/account/welcome")
             })
         })
     </script>

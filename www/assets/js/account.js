@@ -31,7 +31,7 @@ $(document).ready(async () => {
 
     const $durationSelect = $("#durationSelect");
 
-    $("#accountId").text(accountId)
+    $(".accountId").text(accountId)
 
     function completePayment({duration, payReq}) {
         $("#beforePayment").show()

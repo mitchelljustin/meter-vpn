@@ -1,0 +1,241 @@
+<div class="row">
+    <div class="col-lg p-3">
+        <h2>My Account</h2>
+        <p class="text-dark">
+            Account ID:
+            <strong class="accountId">
+            </strong>
+        </p>
+        <div class="py-2"></div>
+        <div>
+            <button class="genWireGuardConfig btn btn-primary btn-lg mb-3">
+                Download VPN config
+                <i class="ml-2 fas fa-download"></i>
+            </button>
+            <div class="card text-white bg-light mb-3">
+                <h5 class="card-header">
+                    <a class="d-flex justify-content-between align-items-center w-100" data-toggle="collapse"
+                       href="#wireGuardGuide" role="button">
+                        <span>Setup WireGuard VPN</span>
+                        <i class="fas fa-chevron-down">
+                        </i>
+                    </a>
+                </h5>
+                <div id="wireGuardGuide" class="card-body collapse">
+                    <div class="card-text">
+                        <p>
+                            Works on Mac, Windows, iOS, Android and Linux.
+                        </p>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                1. Download and install the <a
+                                        href="https://www.wireguard.com/install/">WireGuard VPN app</a>.
+                            </li>
+                            <li class="list-group-item">
+                                2. Start the Wireguard VPN app.
+                            </li>
+                            <li class="list-group-item">
+                                3. Click button "Download VPN config" above to download your WireGuard VPN
+                                configuration.
+                            </li>
+                            <li class="list-group-item">
+                                <p>4. Import the configuration ZIP file into WireGuard.</p>
+                                <img style="height: 150px; width: 100%; display: block;"
+                                     src="/assets/images/Wireguard_Import_Guide.png" alt="">
+                            </li>
+                            <li class="list-group-item">
+                                5. Click "Activate" on the imported VPN configuration.
+                                <div>
+                                    <small>Make sure you've bought enough VPN time or it won't work.</small>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="card text-white bg-light mb-3">
+                <h5 class="card-header">
+                    <a class="d-flex justify-content-between align-items-center w-100" data-toggle="collapse"
+                       href="#lightningGuide" role="button">
+                        <span>
+                            Setup Lightning Payments
+                        </span>
+                        <i class="fas fa-chevron-down">
+                        </i>
+                    </a>
+                </h5>
+                <div id="lightningGuide" class="card-body collapse">
+                    <div class="card-text">
+                        <p>
+                            <a href="https://bitcoin.org">Bitcoin</a> is a native currency for the Internet.
+                        </p>
+                        <p>
+                            <a href="https://lightning.engineering/technology.html">Lightning Network</a>
+                            is a Bitcoin extension that makes payments instant and anonymous.
+                        </p>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <div>
+                                    1. Buy Bitcoin on an exchange.
+                                </div>
+                                <small>
+                                    For suggestions on the best exchanges to use <a
+                                            href="https://bitcoin.org/en/exchanges">look here</a>.
+                                </small>
+                            </li>
+                            <li class="list-group-item">
+                                2. Download a Lightning payment wallet app like <a href="https://zap.jackmallers.com/">Zap</a>
+                                onto your phone or computer.
+                            </li>
+                            <li class="list-group-item">
+                                3. Open your Lightning wallet and set it up.
+                            </li>
+                            <li class="list-group-item">
+                                4. Send Bitcoin to your Lightning wallet.
+                                <div>
+                                    <small>
+                                        We recommend you send no more than $20 worth of Bitcoin to your Lightning
+                                        wallet.
+                                    </small>
+                                </div>
+                            </li>
+                            <li class="list-group-item">
+                                5. In your Lightning wallet, open a channel with a well-connected hub such as Yalls or
+                                Zap.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="row align-items-center flex-column">
+            <h3 class="col-10 py-3">
+                Time left
+            </h3>
+            <img src="/assets/images/meter.png" class="col-md-6 col-9" alt="">
+            <div class="col-md-8 col-10 d-flex justify-content-between">
+                <div class="text-center">
+                    <div class="display-2" id="durationDays">0</div>
+                    <p>days</p>
+                </div>
+                <div class="text-center">
+                    <div class="display-2" id="durationHours">0</div>
+                    <p>hours</p>
+                </div>
+                <div class="text-center">
+                    <div class="display-2" id="durationMinutes">0</div>
+                    <p>minutes</p>
+                </div>
+            </div>
+            <div class="py-3"></div>
+            <div class="col-md-10">
+                <div class="px-3 border border-dark rounded">
+                    <h5 class="pt-4">
+                        Add time:
+                    </h5>
+                    <div class="input-group input-group-lg">
+                        <select class="custom-select" id="durationSelect">
+                            <option value="null" selected>Choose duration...</option>
+                            <option value=1>1 hour</option>
+                            <option value=6>6 hours</option>
+                            <option value=24>1 day</option>
+                            <option value=72>3 days</option>
+                            <option value=168>1 week</option>
+                            <option value=720>30 days</option>
+                        </select>
+                        <div class="input-group-append">
+                            <button class="btn btn-success" type="button" id="genPayReq">
+                                    <span id="notRequesting">
+                                        Request
+                                    </span>
+                                <span id="requesting" style="display: none">
+                                        <span class="spinner-border spinner-border-sm" role="status">
+                                        </span>
+                                    </span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row my-4">
+                        <div class="col d-inline-flex justify-content-between align-items-center text-white flex-column flex-md-row">
+                            <h5>Price: </h5>
+                            <div class="d-md-none my-1"></div>
+                            <h5 class="text-gold">
+                                <span id="satCost">~</span> sat
+                            </h5>
+                            <h5 class="d-none d-md-inline">/</h5>
+                            <div class="d-md-none my-1"></div>
+                            <h5><span id="btcCost">~</span> BTC</h5>
+                            <h5 class="d-none d-md-inline">/</h5>
+                            <div class="d-md-none my-1"></div>
+                            <h5><span id="usdCost">~</span> USD</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="payReqModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Complete Payment</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row align-items-center flex-column">
+                    <h3 class="text-gold border-bottom border-dark pb-4">
+                        Payment Request
+                    </h3>
+                    <div id="beforePayment" class="row align-items-center flex-column">
+                        <div class="lead mt-3">
+                            <span class="requestHours"></span>
+                            hours of VPN for
+                            <span><span id="requestSatoshi"></span> satoshi.</span>
+                            *
+                        </div>
+                        <div class="mt-4 p-2 rounded bg-white">
+                            <div id="payReqQR"></div>
+                        </div>
+                        <div class="my-2">
+                            <a class="btn btn-link btn-lg" href="" id="payReqLink">
+                                Open in App ⚡️
+                            </a>
+                        </div>
+                        <input id="payReqStr" type="text" style="position: absolute; top: -100000px;">
+                        <button id="copyPayReq" class="btn btn-secondary btn-lg mb-4"
+                                data-clipboard-target="#payReqStr">
+                            Copy to clipboard <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    <div id="afterPayment"
+                         class="row align-items-center justify-content-center flex-column py-5 my-3"
+                         style="display: none;">
+                        <span class="text-success"><i class="fas fa-check-circle fa-4x"></i></span>
+                        <p class="lead mt-4">
+                            Payment completed
+                        </p>
+                        <p class="text-white-50">
+                            Added <span class="requestHours"></span> hours of VPN time to your account.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="w-100 text-center text-white-50">
+                    <p>
+                        * Dialog will disappear once payment is completed.
+                        <br>
+                        VPN time is added to your account immediately upon receipt.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/assets/js/account.js"></script>

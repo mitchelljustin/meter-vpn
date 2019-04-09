@@ -96,48 +96,58 @@ func createApiRoutes(router *gin.Engine, meter *daemon.ParkingMeter) {
 }
 
 type pageInfo struct {
+	Path  string
 	Title string
 	File  string
 }
 
-var Pages = map[string]pageInfo{
-	"": {
+var Pages = []pageInfo{
+	{
+		Path:  "/",
 		File:  "index",
 		Title: "MeterVPN - Pay-as-you-go VPN",
 	},
-	"account": {
+	{
+		Path:  "/account",
 		File:  "account",
 		Title: "MeterVPN - My Account",
 	},
-	"login": {
+	{
+		Path:  "/account/welcome",
+		File:  "account-welcome",
+		Title: "MeterVPN - Welcome!",
+	},
+	{
+		Path:  "/login",
 		File:  "login",
 		Title: "MeterVPN - Log In",
 	},
-	"create-account": {
+	{
+		Path:  "/create-account",
 		File:  "create-account",
 		Title: "MeterVPN - Create Account",
 	},
 }
 
 func createWwwRoutes(router *gin.Engine) {
+	disableCache := gin.Mode() != gin.ReleaseMode
 	router.HTMLRender = gintemplate.New(gintemplate.TemplateConfig{
 		Root:         "views",
 		Extension:    ".html",
 		Master:       "layouts/master",
-		DisableCache: gin.Mode() != gin.ReleaseMode,
+		DisableCache: disableCache,
 	})
-	for name, info := range Pages {
-		path := "/" + name
-		func(path string, info pageInfo) {
-			router.GET(path, func(ctx *gin.Context) {
+	for _, page := range Pages {
+		func(page pageInfo) {
+			router.GET(page.Path, func(ctx *gin.Context) {
 				accountId, err := ctx.Cookie("accountId")
 				loggedIn := err != http.ErrNoCookie && accountId != ""
-				ctx.HTML(http.StatusOK, info.File, gin.H{
-					"Title":    info.Title,
+				ctx.HTML(http.StatusOK, page.File, gin.H{
+					"Title":    page.Title,
 					"LoggedIn": loggedIn,
 				})
 			})
-		}(path, info)
+		}(page)
 	}
 	router.Use(static.ServeRoot("/", "./www"))
 }
