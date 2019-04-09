@@ -41,7 +41,7 @@ func main() {
 	parkingMeter, err := daemon.NewParkingMeter(store, daemon.LNDParams{
 		MacaroonPath: "secret/admin.macaroon",
 		CertPath:     "secret/tls.cert",
-		Hostname:     "159.89.121.214:10009",
+		Hostname:     "localhost:10009",
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -105,7 +105,7 @@ var Pages = map[string]pageInfo{
 	},
 	"create-account": {
 		File:  "create-account",
-		Title: "MeterVPN - Get New Account",
+		Title: "MeterVPN - Create Account",
 	},
 }
 
@@ -114,7 +114,7 @@ func createWwwRoutes(router *gin.Engine) {
 		Root:         "views",
 		Extension:    ".html",
 		Master:       "layouts/master",
-		DisableCache: true,
+		DisableCache: gin.Mode() != gin.ReleaseMode,
 	})
 	for name, info := range Pages {
 		path := "/" + name

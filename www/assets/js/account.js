@@ -36,7 +36,7 @@ $(document).ready(async () => {
     function completePayment({duration, payReq}) {
         $("#beforePayment").show()
         $("#afterPayment").hide()
-        const match = /^ln(tb|bc)(\d+[munp])1[0-9a-z]+/.exec(payReq)
+        const match = /^ln(tb|bc|sb)(\d+[munp])1[0-9a-z]+/.exec(payReq)
         let satoshis
         if (!match) {
             console.error(payReq)
