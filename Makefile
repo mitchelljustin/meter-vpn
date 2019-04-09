@@ -1,4 +1,4 @@
-all: meterd
+all: metervpn
 
-meterd:
-	go build -o ./bin/meterd ./cmd/meterd
+metervpn:
+	go build -o ./bin/metervpn ./cmd/metervpn
