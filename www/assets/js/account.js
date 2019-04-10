@@ -147,6 +147,10 @@ $(document).ready(async () => {
         const blob = await zip.generateAsync({type: "blob"})
         saveAs(blob, "wireguard-config.zip")
     })
+
+    if (window.showSetupGuides === true) {
+        $("#withSetupGuides").removeClass("d-none")
+    }
 })
 
 const configTemplateIPv4 = ({secretKey, ipv4}) => `\

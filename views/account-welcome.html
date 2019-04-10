@@ -1,10 +1,15 @@
 {{define "content"}}
     <div class="jumbotron">
         <h1 class="display-4">Welcome to MeterVPN!</h1>
-        <p class="lead">
+        <p class="lead mt-4">
             Your anonymous Account ID is <strong class="accountId"></strong>.
             Remember it so you can log back in next time.
         </p>
+        <hr class="my-4">
+        <p class="lead mb-4">
+            Set up WireGuard VPN and Lightning payments by following the guides below.
+        </p>
+        {{include "partials/setup-guides"}}
     </div>
     {{include "partials/account"}}
 {{end}}
