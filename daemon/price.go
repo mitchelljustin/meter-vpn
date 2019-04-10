@@ -58,8 +58,17 @@ func (pt *PriceTracker) UpdateLatestRate() error {
 }
 
 func (pt *PriceTracker) RetrieveSnapshot() PricesSnapshot {
-	if err := pt.UpdateLatestRate(); err != nil {
-		log.Printf("Error getting latest rate: %v, using stale rate", err)
+	if pt.LatestUSDBTC == 0 {
+		if err := pt.UpdateLatestRate(); err != nil {
+			log.Printf("Error fetching price: %v", err)
+			return PricesSnapshot{}
+		}
+	} else {
+		go func() {
+			if err := pt.UpdateLatestRate(); err != nil {
+				log.Printf("Error fetching price: %v", err)
+			}
+		}()
 	}
 	return PricesSnapshot{
 		Satoshi: durationSnapshot{

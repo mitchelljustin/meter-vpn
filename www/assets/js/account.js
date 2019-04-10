@@ -19,7 +19,6 @@ const MULTIPLIERS = {
 }
 
 $(document).ready(async () => {
-    $('[data-toggle="tooltip"]').tooltip()
     const accountId = Cookies.get("accountId")
     if (!accountId) {
         window.location.href = "/"
@@ -104,13 +103,13 @@ $(document).ready(async () => {
         $("#notRequesting").show()
     })
 
-    const $btcCost = $("#btcCost")
     const $satCost = $("#satCost")
+    const $satCostContainer = $("#satCostContainer")
     const $usdCost = $("#usdCost")
     $durationSelect.change(async () => {
         let hours = parseInt($durationSelect.val())
         if (isNaN(hours)) {
-            $btcCost.text("~")
+            $satCostContainer.attr("data-original-title", "~")
             $satCost.text("~")
             $usdCost.text("~")
             return
@@ -121,7 +120,7 @@ $(document).ready(async () => {
         const sats = Math.ceil(satsPerHour * hours)
         const btc = sats / 1e8
         const usd = usdPerHour * hours
-        $btcCost.text(btc.toFixed(8))
+        $satCostContainer.attr('data-original-title', `${btc.toFixed(8)} BTC`)
         $satCost.text(numberWithCommas(sats))
         $usdCost.text(`$${usd.toFixed(4)}`)
     })
@@ -151,6 +150,8 @@ $(document).ready(async () => {
     if (window.showSetupGuides === true) {
         $("#withSetupGuides").removeClass("d-none")
     }
+
+    $('[data-toggle="tooltip"]').tooltip()
 })
 
 const configTemplateIPv4 = ({secretKey, ipv4}) => `\

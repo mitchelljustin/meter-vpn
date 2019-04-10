@@ -14,10 +14,9 @@
             </button>
         </div>
         <hr class="my-4">
-        <p>
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dicta doloribus eius fuga minus praesentium?
-            Aspernatur consectetur consequuntur dolorem harum nemo nobis nulla optio quibusdam tempore? Earum eum itaque
-            quidem rem.
+        <p class="lead">
+            Top up on VPN time by selecting an amount of time from the dropdown,
+            then clicking Request. You will be prompted to complete the payment with Lightning.
         </p>
         <hr class="my-4">
         <div id="withSetupGuides" class="d-none">
@@ -27,67 +26,64 @@
     </div>
     <div class="col-lg-7">
         <div class="row align-items-center flex-column">
-            <h3 class="col-10 py-3">
-                Time left
-            </h3>
-            <img src="/assets/images/meter.png" class="col-md-6 col-9" alt="">
-            <div class="col-md-8 col-10 d-flex justify-content-between">
-                <div class="text-center">
-                    <div class="display-2" id="durationDays">0</div>
-                    <p>days</p>
+            <div class="col-10 d-flex align-items-center flex-column bg-light rounded shadow p-4">
+                <img src="/assets/images/meter.png" class="col-sm-6 col-9" alt="">
+                <h1 class="mt-2">VPN Time</h1>
+                <div class="col-sm-12 my-3 py-2 px-4 bg-dark-primary rounded shadow">
+                    <div class="d-flex justify-content-between align-items-startØ">
+                        <div class="text-center">
+                            <span class="display-2" id="durationDays">0</span>
+                            <p>days</p>
+                        </div>
+                        <span class="display-2">:</span>
+                        <div class="text-center">
+                            <span class="display-2" id="durationHours">0</span>
+                            <p>minutes</p>
+                        </div>
+                        <span class="display-2">:</span>
+                        <div class="text-center">
+                            <span class="display-2" id="durationMinutes">0</span>
+                            <p>hours</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="text-center">
-                    <div class="display-2" id="durationHours">0</div>
-                    <p>hours</p>
+                <h4 class="mt-5 mb-3">
+                    Add time:
+                </h4>
+                <div class="col-md-12 input-group input-group-lg">
+                    <select class="custom-select" id="durationSelect">
+                        <option value="null" selected>Choose duration...</option>
+                        <option value=1>1 hour</option>
+                        <option value=6>6 hours</option>
+                        <option value=24>1 day</option>
+                        <option value=72>3 days</option>
+                        <option value=168>1 week</option>
+                        <option value=720>30 days</option>
+                    </select>
+                    <div class="input-group-append">
+                        <button class="btn btn-success" type="button" id="genPayReq">
+                            <span id="notRequesting">
+                                Request
+                            </span>
+                            <span id="requesting" style="display: none">
+                                <span class="spinner-border spinner-border-sm" role="status">
+                                </span>
+                            </span>
+                        </button>
+                    </div>
                 </div>
-                <div class="text-center">
-                    <div class="display-2" id="durationMinutes">0</div>
-                    <p>minutes</p>
-                </div>
-            </div>
-            <div class="py-3"></div>
-            <div class="col-md-10">
-                <div class="px-3 border border-dark rounded">
-                    <h5 class="pt-4">
-                        Add time:
+                <div class="col-sm-12 mt-4 d-inline-flex justify-content-between align-items-center flex-column flex-md-row">
+                    <h5>Price: </h5>
+                    <div class="d-md-none my-1"></div>
+                    <h5 id="satCostContainer" class="text-gold" data-toggle="tooltip" data-placement="bottom"
+                        data-title="~ BTC">
+                        <span id="satCost">~</span> sat
                     </h5>
-                    <div class="input-group input-group-lg">
-                        <select class="custom-select" id="durationSelect">
-                            <option value="null" selected>Choose duration...</option>
-                            <option value=1>1 hour</option>
-                            <option value=6>6 hours</option>
-                            <option value=24>1 day</option>
-                            <option value=72>3 days</option>
-                            <option value=168>1 week</option>
-                            <option value=720>30 days</option>
-                        </select>
-                        <div class="input-group-append">
-                            <button class="btn btn-success" type="button" id="genPayReq">
-                                    <span id="notRequesting">
-                                        Request
-                                    </span>
-                                <span id="requesting" style="display: none">
-                                        <span class="spinner-border spinner-border-sm" role="status">
-                                        </span>
-                                    </span>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="row my-4">
-                        <div class="col d-inline-flex justify-content-between align-items-center text-white flex-column flex-md-row">
-                            <h5>Price: </h5>
-                            <div class="d-md-none my-1"></div>
-                            <h5 class="text-gold">
-                                <span id="satCost">~</span> sat
-                            </h5>
-                            <h5 class="d-none d-md-inline">/</h5>
-                            <div class="d-md-none my-1"></div>
-                            <h5><span id="btcCost">~</span> BTC</h5>
-                            <h5 class="d-none d-md-inline">/</h5>
-                            <div class="d-md-none my-1"></div>
-                            <h5><span id="usdCost">~</span> USD</h5>
-                        </div>
-                    </div>
+                    <h5 class="d-none d-md-inline">/</h5>
+                    <div class="d-md-none my-1"></div>
+                    <h5>
+                        <span id="usdCost">~</span> USD
+                    </h5>
                 </div>
             </div>
         </div>
@@ -106,8 +102,7 @@
             <div class="modal-body">
                 <div class="row align-items-center flex-column">
                     <h3 class="text-gold border-bottom border-dark pb-4">
-                        Payment Request
-                    </h3>
+                        Payment Request </h3>
                     <div id="beforePayment" class="row align-items-center flex-column">
                         <div class="lead mt-3">
                             <span class="requestHours"></span>
@@ -126,7 +121,8 @@
                         <input id="payReqStr" type="text" style="position: absolute; top: -100000px;">
                         <button id="copyPayReq" class="btn btn-secondary btn-lg mb-4"
                                 data-clipboard-target="#payReqStr">
-                            Copy to clipboard <i class="fas fa-copy"></i>
+                            Copy to clipboard
+                            <i class="fas fa-copy"></i>
                         </button>
                     </div>
                     <div id="afterPayment"

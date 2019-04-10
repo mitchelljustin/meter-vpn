@@ -15,13 +15,16 @@ small {
     color: #d9a357;
 }
 
+.bg-dark-primary {
+    background-color: #2f507385;
+}
+
 nav {
     background: #272a2e;
 }
 
 hr {
     border-color: #475059;
-    margin: 3.5em 0;
 }
 
 @font-face {
