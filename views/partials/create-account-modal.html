@@ -41,11 +41,15 @@
             const $requesting = $("#createAccountRequesting")
             $notRequesting.hide()
             $requesting.show()
-            const {accountId} = await $.post("/peer")
-            $requesting.hide()
-            $notRequesting.show()
-            Cookies.set("accountId", accountId)
-            window.location.href = "/account/welcome"
+            try {
+                const {accountId} = await $.post("/peer")
+                Cookies.set("accountId", accountId)
+                window.location.href = "/account/welcome"
+            } catch (e) {
+                console.error(e)
+                $requesting.hide()
+                $notRequesting.show()
+            }
         })
     })
 </script>
