@@ -6,39 +6,20 @@
                 Create Account
             </h2>
             <hr>
+            <p class="lead">
+                Click the button below to generate a new, random Account ID.
+                This Account ID will be used to check the VPN time you have left, and to top up.
+            </p>
             <button id="generateAccountId" class="btn btn-success btn-lg">
-                Generate Account ID
+                <span id="notRequesting">
+                    Generate Account ID
+                </span>
+                <span id="requesting" style="display: none;">
+                    <span class="spinner-border" role="status"></span>
+                </span>
             </button>
-            <div class="withAccount" style="display: none;">
-                <a href="/account">Go to Account</a>
-            </div>
-            <div class="mt-4">
-                <p class="lead">
-                    You start with zero VPN time. Buy VPN time on your Account page.
-                </p>
-                <p class="lead">
-                    Guide to set up  WireGuard VPN
-                </p>
-                <p class="lead">
-                    Guide to set up Lightning payments
-                </p>˛
-            </div>
         </div>
         <div class="col"></div>
     </div>
-    <script>
-        $(document).ready(() => {
-            if (Cookies.get("accountId")) {
-                window.location.href = "/account"
-            }
-            $("#generateAccountId").click(async () => {
-                const {accountId} = await $.post("/peer")
-                Cookies.set("accountId", accountId)
-                $(".withAccount").show()
-                $("#accountId").text(accountId)
-                $("#generateAccountId").attr("disabled", true)
-                setTimeout(() => window.location.href = "/account/welcome")
-            })
-        })
-    </script>
+
 {{end}}
