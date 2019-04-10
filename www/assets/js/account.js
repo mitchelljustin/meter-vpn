@@ -22,7 +22,7 @@ $(document).ready(async () => {
     $('[data-toggle="tooltip"]').tooltip()
     const accountId = Cookies.get("accountId")
     if (!accountId) {
-        window.location.href = "/login"
+        window.location.href = "/"
         return
     }
     const payReqQrCode = new QRCode(

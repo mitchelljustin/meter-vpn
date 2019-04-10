@@ -117,16 +117,6 @@ var Pages = []pageInfo{
 		File:  "account-welcome",
 		Title: "MeterVPN - Welcome!",
 	},
-	{
-		Path:  "/login",
-		File:  "login",
-		Title: "MeterVPN - Log In",
-	},
-	{
-		Path:  "/create-account",
-		File:  "create-account",
-		Title: "MeterVPN - Create Account",
-	},
 }
 
 func createWwwRoutes(router *gin.Engine) {
