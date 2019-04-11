@@ -4,12 +4,6 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "base32": "^0.0.6",
-    "clipboard": "^2.0.4",
-    "file-saver": "^2.0.1",
-    "jquery": "^3.3.1",
-    "jszip": "^3.2.0",
-    "qrcodejs": "^1.0.0",
-    "tweetnacl": "^1.0.1"
+    "qrcodejs": "^1.0.0"
   }
 }
