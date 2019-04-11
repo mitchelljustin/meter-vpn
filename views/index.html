@@ -1,14 +1,13 @@
 {{define "content"}}
-    <div class="py-5"></div>
-    <div class="row d-flex flex-md-nowrap justify-content-between align-items-start">
-        <div class="col-md-5 col-6 m-3">
+    <div class="py-4"></div>
+    <div class="my-5 row justify-content-center">
+        <div class="col-lg-5 col-sm-10 col-12">
             <video src="/assets/TopUp.webm"
                    width="100%"
                    autoplay muted loop>
-
             </video>
         </div>
-        <div class="ml-5">
+        <div class="col-lg-7 col-sm-10 col-12 my-4 my-lg-0">
             <h1 class="display-4">
                 Internet privacy, without the monthly subscription.
             </h1>
@@ -33,14 +32,17 @@
             </p>
         </div>
     </div>
-    <div class="py-5"></div>
-    <div class="row bg-info p-3 my-4 rounded-lg d-flex justify-content-between align-items-center">
-        <h4 class="m-0">
-            Browse the Internet in absolute privacy
-        </h4>
-        <button class="btn btn-lg btn-success" style="font-size: 2em;"  data-toggle="modal" data-target="#createAccountModal">
-            Create Account
-            <i class="fas fa-long-arrow-alt-right"></i>
+    <div class="py-4"></div>
+    <div class="row bg-info p-3 my-5 rounded-lg justify-content-between align-items-center">
+        <h3 class="m-0">
+            Browse the Internet in privacy
+        </h3>
+        <button class="btn btn-lg btn-success p-3 mt-3 mt-md-0 col-md-auto col-12" data-toggle="modal"
+                data-target="#createAccountModal">
+            <span class="h3">
+                Create Account
+                <i class="fas fa-long-arrow-alt-right"></i>
+            </span>
         </button>
     </div>
     <hr class="my-5">
@@ -93,7 +95,8 @@
                         <a href="https://www.wireguard.com/performance/">fastest protocol</a> on the market.
                     </p>
                     <p>
-                        Browse in privacy on all of your devices. The WireGuard app is available on iOS, Android, Mac and Windows.
+                        Browse in privacy on all of your devices. The WireGuard app is available on iOS, Android, Mac
+                        and Windows.
                     </p>
                 </div>
                 <p>
@@ -141,16 +144,16 @@
         </button>
     </div>
     <script>
-        $(document).ready(async () => {
-            const prices = await $.getJSON("/price")
-            const btcPrice = (prices.satoshi.day / 1e8).toFixed(8);
-            const satPrice = prices.satoshi.day.toFixed(1);
-            const usdPrice = prices.usd.day.toFixed(5);
+    $(document).ready(async () => {
+        const prices = await $.getJSON("/price")
+        const btcPrice = (prices.satoshi.day / 1e8).toFixed(8);
+        const satPrice = prices.satoshi.day.toFixed(1);
+        const usdPrice = prices.usd.day.toFixed(5);
 
-            $("#1dPriceSats").text(satPrice)
-            $("#satPriceSpan").attr("title", `${btcPrice} BTC`)
-            $("#1dPriceUsd").text(usdPrice)
-            $('[data-toggle="tooltip"]').tooltip()
-        })
+        $("#1dPriceSats").text(satPrice)
+        $("#satPriceSpan").attr("title", `${btcPrice} BTC`)
+        $("#1dPriceUsd").text(usdPrice)
+        $('[data-toggle="tooltip"]').tooltip()
+    })
     </script>
 {{end}}
