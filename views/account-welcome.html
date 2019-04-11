@@ -2,7 +2,7 @@
     <div class="jumbotron">
         <h1 class="display-4">Welcome to MeterVPN!</h1>
         <p class="lead mt-4">
-            Your new Account ID: <strong class="accountId"></strong>.
+            Your new Account ID is <span class="accountId"></span>.
             Remember it so you can log back in next time.
         </p>
         <hr class="my-4">
@@ -10,6 +10,9 @@
             Get started by following the guides below.
         </p>
         {{include "partials/setup-guides"}}
+        <p class="lead mt-4">
+            Congratulations! You can now start buying VPN time for your account.
+        </p>
     </div>
     {{include "partials/account"}}
 {{end}}

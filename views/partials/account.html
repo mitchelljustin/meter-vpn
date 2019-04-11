@@ -15,11 +15,11 @@
         </div>
         <hr class="my-4">
         <p class="lead">
-            Top up on VPN time by selecting an amount of time from the dropdown,
-            then clicking Request. You will be prompted to complete the payment with Lightning.
+            Top up on VPN time by selecting a time from the dropdown, then clicking Request.
+            You will be prompted to complete the Lightning payment.
         </p>
-        <hr class="my-4">
         <div id="withSetupGuides" class="d-none">
+            <hr class="my-4">
             <h4 class="mb-4">Setup Guides</h4>
             {{include "partials/setup-guides"}}
         </div>
@@ -218,7 +218,7 @@ $(document).ready(async () => {
             if (result === "completed") {
                 $("#beforePayment").hide()
                 $("#afterPayment").show()
-                refreshDuration()
+                await refreshDuration()
                 $("#durationSelect").val("null")
                 setTimeout(() => $payReqModal.modal("hide"), 3000)
                 return
