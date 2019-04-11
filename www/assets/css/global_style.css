@@ -1,3 +1,8 @@
+
+body {
+    font-family: 'Quantico', sans-serif;
+
+}
 .content {
     background: #272a2e;
     border-top: #10171e 1px solid;
@@ -27,11 +32,6 @@ hr {
     border-color: #475059;
 }
 
-@font-face {
-    font-family: 'Orbitron';
-    src: url('/assets/fonts/orbitron-light.otf');
-}
-
-.orbitron {
-    font-family: "Orbitron";
+.font-brand {
+    font-family: 'Quantico', sans-serif;
 }
