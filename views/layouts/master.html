@@ -27,6 +27,7 @@
     <link crossorigin="anonymous" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
           integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Aldrich|Audiowide|Faster+One|Iceland|Quantico" rel="stylesheet">
+
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-138920532-1"></script>
     <script>
@@ -80,13 +81,13 @@
                 </li>
             {{else}}
                 <li class="nav-item m-1">
-                    <button class="btn btn-link btn-lg nav-link col-12" data-toggle="modal"
+                    <button class="btn btn-link btn-lg nav-link col-12" data-toggle="modal" data-action="login"
                        data-target="#loginModal">
                         Login
                     </button>
                 </li>
                 <li class="nav-item m-1">
-                    <button class="btn btn-lg btn-success col-12" data-toggle="modal" data-target="#createAccountModal">
+                    <button class="btn btn-lg btn-success col-12" data-toggle="modal" data-action="sign_up" data-target="#createAccountModal">
                         Create Account
                     </button>
                 </li>

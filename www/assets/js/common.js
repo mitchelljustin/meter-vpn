@@ -14,7 +14,18 @@ function numberWithCommas(x) {
 
 $(document).ready(() => {
     $(`[data-action="logout"]`).click(() => {
+        gtag('event', 'click', {
+            event_category: 'engagement',
+            event_label: 'logout',
+        })
         Cookies.remove("accountId")
         window.location.href = "/"
+    })
+
+    $('[data-action]').click((e) => {
+        gtag('event', 'click', {
+            event_category: 'engagement',
+            event_label: e.target.attr("data-action"),
+        })
     })
 })

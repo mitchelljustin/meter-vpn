@@ -53,6 +53,7 @@
                 return `Unknown error: ${JSON.stringify(e)}`
             }
         }
+        gtag('event', 'login')
         window.location.href = "/account"
         return undefined
     }

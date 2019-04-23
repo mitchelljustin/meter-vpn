@@ -8,7 +8,7 @@
         </p>
         <div class="py-2"></div>
         <div>
-            <button class="genWireGuardConfig btn btn-primary btn-lg mb-3">
+            <button class="genWireGuardConfig btn btn-primary btn-lg mb-3" data-action="download_vpn_config">
                 Download VPN config
                 <i class="ml-2 fas fa-download"></i>
             </button>
@@ -60,7 +60,7 @@
                     <option value=720>30 days</option>
                 </select>
                 <div class="input-group-append">
-                    <button class="btn btn-success" type="button" id="genPayReq">
+                    <button class="btn btn-success" type="button" id="genPayReq" data-action="request_vpn_time">
                         <span id="notRequesting">
                             Request
                         </span>
@@ -93,7 +93,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Complete Payment</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" data-action="dismiss_payment_request">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -113,13 +113,13 @@
                             <div id="payReqQR"></div>
                         </div>
                         <div class="my-2">
-                            <a class="btn btn-link btn-lg" href="" id="payReqLink">
+                            <a class="btn btn-link btn-lg" href="" id="payReqLink" data-action="open_payreq_in_app">
                                 Open in App ⚡️
                             </a>
                         </div>
                         <input id="payReqStr" type="text" style="position: absolute; top: -100000px;">
                         <button id="copyPayReq" class="btn btn-secondary btn-lg mb-4"
-                                data-clipboard-target="#payReqStr">
+                                data-action="copy_payreq_to_clipboard" data-clipboard-target="#payReqStr">
                             Copy to clipboard
                             <i class="fas fa-copy"></i>
                         </button>
@@ -180,7 +180,7 @@ $(document).ready(async () => {
         document.getElementById("payReqQR"),
     )
 
-    const $durationSelect = $("#durationSelect");
+    const $durationSelect = $("#durationSelect")
 
     $(".accountId").text(accountId)
 
@@ -260,6 +260,11 @@ $(document).ready(async () => {
     const $usdCost = $("#usdCost")
     $durationSelect.change(async () => {
         let hours = parseInt($durationSelect.val())
+        gtag('event', 'change', {
+            event_category: 'engagement',
+            event_label: 'change_requested_duration',
+            value: hours,
+        })
         if (isNaN(hours)) {
             $satCostContainer.attr("data-original-title", "~")
             $satCost.text("~")
