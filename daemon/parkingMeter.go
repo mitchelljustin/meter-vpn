@@ -18,6 +18,7 @@ import (
 )
 
 const TimeFormat = time.RFC1123
+const MaxVpnTime = time.Hour * 24 * 30 // 1 month
 
 type ParkingMeter struct {
 	store           PeerStore
@@ -151,6 +152,12 @@ func (pm *ParkingMeter) HandleExtensionRequest(ctx *gin.Context) {
 	duration, err := time.ParseDuration(fmt.Sprintf("%vs", extension.Duration))
 	if err != nil {
 		respondBadRequest(ctx, err)
+		return
+	}
+	newExpiry := peer.ExpiryDate.Add(duration)
+	maxExpiry := time.Now().Add(MaxVpnTime)
+	if newExpiry.After(maxExpiry) {
+		respondBadRequest(ctx, fmt.Errorf("cannot have more than %v of VPN time", MaxVpnTime))
 		return
 	}
 	sats := float64(duration) / float64(time.Hour) * pm.priceTracker.RetrieveSnapshot().Satoshi.Hour

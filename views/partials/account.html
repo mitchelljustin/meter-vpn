@@ -251,6 +251,7 @@ $(document).ready(async () => {
                 const payReq = e.responseText
                 completePayment({duration, payReq})
             } else {
+                alert(JSON.stringify(e))
                 console.error(e)
             }
         }
