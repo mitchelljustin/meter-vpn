@@ -217,10 +217,13 @@ $(document).ready(async () => {
         setTimeout(async function checkCompleted() {
             const {result} = await $.getJSON("/peer/extend/completed", {payReq})
             if (result === "completed") {
+                gtag('event', 'purchase', {
+                    event_label: 'purchase_vpn_time',
+                    value: hours,
+                })
                 $("#beforePayment").hide()
                 $("#afterPayment").show()
                 await refreshDuration()
-                $("#durationSelect").val("null")
                 setTimeout(() => $payReqModal.modal("hide"), 3000)
                 return
             }
