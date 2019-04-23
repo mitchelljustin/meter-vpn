@@ -99,6 +99,25 @@ func (pm *ParkingMeter) loadPeerFromCookie(ctx *gin.Context) (*Peer, bool) {
 	return peer, true
 }
 
+func (pm *ParkingMeter) fulfillPaymentRequest(payReq string) {
+	var extension pendingExtension
+	var ok bool
+	if extension, ok = pm.pendingInvoices[payReq]; !ok {
+		return
+	}
+	log.Printf("Adding %v of VPN time to %v", extension.Duration, extension.AccountID)
+	peer, err := pm.store.GetPeer(extension.AccountID)
+	if err != nil {
+		return
+	}
+	peer.AddAllowance(extension.Duration)
+	if err = pm.store.SavePeer(peer); err != nil {
+		log.Printf("Error saving peer: %v", err)
+	}
+	extension.Completed <- true
+	delete(pm.pendingInvoices, payReq)
+}
+
 func (pm *ParkingMeter) Run() {
 	for {
 		sub, err := pm.lnClient.SubscribeInvoices(pm.ctx, &lnrpc.InvoiceSubscription{
@@ -115,26 +134,9 @@ func (pm *ParkingMeter) Run() {
 				time.Sleep(time.Second * 15)
 				break
 			}
-			if invoice.State != lnrpc.Invoice_SETTLED {
-				continue
+			if invoice.State == lnrpc.Invoice_SETTLED {
+				pm.fulfillPaymentRequest(invoice.PaymentRequest)
 			}
-			payReq := invoice.PaymentRequest
-			var extension pendingExtension
-			var ok bool
-			if extension, ok = pm.pendingInvoices[payReq]; !ok {
-				continue
-			}
-			log.Printf("Adding %v of VPN time to %v", extension.Duration, extension.AccountID)
-			peer, err := pm.store.GetPeer(extension.AccountID)
-			if err != nil {
-				continue
-			}
-			peer.AddAllowance(extension.Duration)
-			if err = pm.store.SavePeer(peer); err != nil {
-				log.Printf("Error saving peer: %v", err)
-			}
-			extension.Completed <- true
-			delete(pm.pendingInvoices, payReq)
 		}
 	}
 }
@@ -176,6 +178,12 @@ func (pm *ParkingMeter) HandleExtensionRequest(ctx *gin.Context) {
 		Duration:  duration,
 		Completed: make(chan bool),
 	}
+	//// TODO: remove
+	//	//go func() {
+	//	//	log.Println("Fake fulfilling payment request")
+	//	//	<-time.NewTimer(time.Second * 5).C
+	//	//	pm.fulfillPaymentRequest(resp.PaymentRequest)
+	//	//}()
 	ctx.String(402, payReq)
 }
 

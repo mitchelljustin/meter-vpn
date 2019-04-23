@@ -37,12 +37,12 @@
                     <span class="display-2">:</span>
                     <div class="text-center">
                         <span class="display-2" id="durationHours">0</span>
-                        <p>minutes</p>
+                        <p>hours</p>
                     </div>
                     <span class="display-2">:</span>
                     <div class="text-center">
                         <span class="display-2" id="durationMinutes">0</span>
-                        <p>hours</p>
+                        <p>minutes</p>
                     </div>
                 </div>
             </div>
@@ -218,8 +218,9 @@ $(document).ready(async () => {
             const {result} = await $.getJSON("/peer/extend/completed", {payReq})
             if (result === "completed") {
                 gtag('event', 'purchase', {
+                    event_category: 'ecommerce',
                     event_label: 'purchase_vpn_time',
-                    value: hours,
+                    value: `${hours}`,
                 })
                 $("#beforePayment").hide()
                 $("#afterPayment").show()
