@@ -110,7 +110,8 @@ func (pm *ParkingMeter) Run() {
 		for {
 			invoice, err := sub.Recv()
 			if err != nil {
-				log.Printf("Error receiving invoice, restarting: %v", err)
+				log.Printf("Error receiving invoice, restarting in 15s: %v", err)
+				time.Sleep(time.Second * 15)
 				break
 			}
 			if invoice.State != lnrpc.Invoice_SETTLED {

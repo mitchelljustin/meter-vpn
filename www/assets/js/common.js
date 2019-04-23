@@ -22,10 +22,11 @@ $(document).ready(() => {
         window.location.href = "/"
     })
 
-    $('[data-action]').click((e) => {
+    $('[data-action]').click(function() {
+        const label = $(this).attr("data-action");
         gtag('event', 'click', {
             event_category: 'engagement',
-            event_label: e.target.attr("data-action"),
+            event_label: label,
         })
     })
 })
