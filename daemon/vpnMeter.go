@@ -60,6 +60,10 @@ func NewVPNMeter(store PeerStore, lndParams LNDParams) (*VPNMeter, error) {
 	return &meter, nil
 }
 
+func (*VPNMeter) Report(format string, v ...interface{}) {
+	log.Printf("[VPN_METER] %v", fmt.Sprintf(format, v...))
+}
+
 type pendingExtension struct {
 	AccountID   string
 	Duration    time.Duration
@@ -105,14 +109,14 @@ func (m *VPNMeter) fulfillPaymentRequest(payReq string) {
 	if extension, ok = m.pendingInvoices[payReq]; !ok {
 		return
 	}
-	log.Printf("Adding %v of VPN time to %v", extension.Duration, extension.AccountID)
+	m.Report("Adding %v of VPN time to %v", extension.Duration, extension.AccountID)
 	peer, err := m.store.GetPeer(extension.AccountID)
 	if err != nil {
 		return
 	}
 	peer.AddAllowance(extension.Duration)
 	if err = m.store.SavePeer(peer); err != nil {
-		log.Printf("Error saving peer: %v", err)
+		m.Report("Error saving peer: %v", err)
 	}
 	extension.OnCompleted <- true
 	delete(m.pendingInvoices, payReq)
@@ -130,7 +134,7 @@ func (m *VPNMeter) Run() {
 		for {
 			invoice, err := sub.Recv()
 			if err != nil {
-				log.Printf("Error receiving invoice, restarting in 15s: %v", err)
+				m.Report("Error receiving invoice, restarting in 15s: %v", err)
 				time.Sleep(time.Second * 15)
 				break
 			}

@@ -48,7 +48,7 @@ func main() {
 
 	store := &daemon.SQLitePeerStore{DB: db}
 
-	parkingMeter, err := daemon.NewVPNMeter(store, daemon.LNDParams{
+	vpnMeter, err := daemon.NewVPNMeter(store, daemon.LNDParams{
 		MacaroonPath: "secret/admin.macaroon",
 		CertPath:     "secret/tls.cert",
 		Hostname:     "localhost:10009",
@@ -56,36 +56,38 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	go parkingMeter.Run()
+	go vpnMeter.Run()
 
-	vpnAgent := daemon.VPNAgent{
+	wgAgent := daemon.WireGuardAgent{
 		Store:    store,
 		Interval: time.Duration(*watchInterval) * time.Second,
 	}
-	go vpnAgent.Run()
+	go wgAgent.Run()
 
-	startGinServer(parkingMeter, *port)
+	app := createHTTPServer(vpnMeter)
+
+	addr := fmt.Sprintf(":%v", port)
+	log.Printf("Server running at %v", addr)
+
+	log.Fatal(app.Run(addr))
 }
 
-func startGinServer(booth *daemon.VPNMeter, port int) {
-	router := gin.Default()
+func createHTTPServer(meter *daemon.VPNMeter) *gin.Engine {
+	app := gin.Default()
 
 	if gin.Mode() == gin.ReleaseMode {
 		rate, _ := limiter.NewRateFromFormatted("1000-H")
 		lim := limiter.New(memory.NewStore(), rate)
-		router.Use(mgin.NewMiddleware(lim))
+		app.Use(mgin.NewMiddleware(lim))
 	}
 
-	createApiRoutes(router, booth)
+	addAPIRoutes(app, meter)
+	addWWWRoutes(app)
 
-	createWwwRoutes(router)
-
-	addr := fmt.Sprintf(":%v", port)
-	log.Printf("Server running at %v", addr)
-	log.Fatal(router.Run(addr))
+	return app
 }
 
-func createApiRoutes(router *gin.Engine, meter *daemon.VPNMeter) {
+func addAPIRoutes(router *gin.Engine, meter *daemon.VPNMeter) {
 	router.GET("/price", meter.HandlePriceRequest)
 	router.POST("/peer", meter.HandleCreatePeerRequest)
 	router.GET("/peer", meter.HandleGetPeerRequest)
@@ -119,7 +121,7 @@ var Pages = []pageInfo{
 	},
 }
 
-func createWwwRoutes(router *gin.Engine) {
+func addWWWRoutes(router *gin.Engine) {
 	disableCache := gin.Mode() != gin.ReleaseMode
 	router.HTMLRender = gintemplate.New(gintemplate.TemplateConfig{
 		Root:         "views",
