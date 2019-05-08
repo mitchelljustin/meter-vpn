@@ -121,9 +121,9 @@ var Pages = []pageInfo{
 	},
 }
 
-func addWWWRoutes(router *gin.Engine) {
+func addWWWRoutes(app *gin.Engine) {
 	disableCache := gin.Mode() != gin.ReleaseMode
-	router.HTMLRender = gintemplate.New(gintemplate.TemplateConfig{
+	app.HTMLRender = gintemplate.New(gintemplate.TemplateConfig{
 		Root:         "views",
 		Extension:    ".html",
 		Master:       "layouts/master",
@@ -131,7 +131,7 @@ func addWWWRoutes(router *gin.Engine) {
 	})
 	for _, page := range Pages {
 		func(page pageInfo) {
-			router.GET(page.Path, func(ctx *gin.Context) {
+			app.GET(page.Path, func(ctx *gin.Context) {
 				accountId, err := ctx.Cookie("accountId")
 				loggedIn := err != http.ErrNoCookie && accountId != ""
 				ctx.HTML(http.StatusOK, page.File, gin.H{
@@ -141,5 +141,5 @@ func addWWWRoutes(router *gin.Engine) {
 			})
 		}(page)
 	}
-	router.Use(static.ServeRoot("/", "./www"))
+	app.Use(static.ServeRoot("/", "./www"))
 }
