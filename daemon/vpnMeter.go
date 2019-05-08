@@ -20,7 +20,7 @@ import (
 const TimeFormat = time.RFC1123
 const MaxVpnTime = time.Hour * 24 * 30 // 1 month
 
-type ParkingMeter struct {
+type VPNMeter struct {
 	store           PeerStore
 	ctx             context.Context
 	lnClient        lnrpc.LightningClient
@@ -34,7 +34,7 @@ type LNDParams struct {
 	CertPath     string
 }
 
-func NewParkingMeter(store PeerStore, lndParams LNDParams) (*ParkingMeter, error) {
+func NewVPNMeter(store PeerStore, lndParams LNDParams) (*VPNMeter, error) {
 	creds, err := credentials.NewClientTLSFromFile(lndParams.CertPath, "")
 	if err != nil {
 		return nil, err
@@ -50,20 +50,20 @@ func NewParkingMeter(store PeerStore, lndParams LNDParams) (*ParkingMeter, error
 	macaroonHex := hex.EncodeToString(macaroon)
 	ctx := context.Background()
 	ctx = metadata.AppendToOutgoingContext(ctx, "macaroon", macaroonHex)
-	booth := ParkingMeter{
+	meter := VPNMeter{
 		store:           store,
 		priceTracker:    PriceTracker{},
 		ctx:             ctx,
 		lnClient:        lnrpc.NewLightningClient(conn),
 		pendingInvoices: make(map[string]pendingExtension),
 	}
-	return &booth, nil
+	return &meter, nil
 }
 
 type pendingExtension struct {
-	AccountID string
-	Duration  time.Duration
-	Completed chan bool
+	AccountID   string
+	Duration    time.Duration
+	OnCompleted chan bool
 }
 
 type ExtensionJSON struct {
@@ -82,13 +82,13 @@ func respondServerError(ctx *gin.Context, err error) {
 	ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 }
 
-func (pm *ParkingMeter) loadPeerFromCookie(ctx *gin.Context) (*Peer, bool) {
+func (m *VPNMeter) loadPeerFromCookie(ctx *gin.Context) (*Peer, bool) {
 	accountId, err := ctx.Cookie("accountId")
 	if err != nil {
 		respondServerError(ctx, err)
 		return nil, false
 	}
-	peer, err := pm.store.GetPeer(accountId)
+	peer, err := m.store.GetPeer(accountId)
 	if err == ErrPeerNotFound {
 		ctx.Status(404)
 		return nil, false
@@ -99,28 +99,28 @@ func (pm *ParkingMeter) loadPeerFromCookie(ctx *gin.Context) (*Peer, bool) {
 	return peer, true
 }
 
-func (pm *ParkingMeter) fulfillPaymentRequest(payReq string) {
+func (m *VPNMeter) fulfillPaymentRequest(payReq string) {
 	var extension pendingExtension
 	var ok bool
-	if extension, ok = pm.pendingInvoices[payReq]; !ok {
+	if extension, ok = m.pendingInvoices[payReq]; !ok {
 		return
 	}
 	log.Printf("Adding %v of VPN time to %v", extension.Duration, extension.AccountID)
-	peer, err := pm.store.GetPeer(extension.AccountID)
+	peer, err := m.store.GetPeer(extension.AccountID)
 	if err != nil {
 		return
 	}
 	peer.AddAllowance(extension.Duration)
-	if err = pm.store.SavePeer(peer); err != nil {
+	if err = m.store.SavePeer(peer); err != nil {
 		log.Printf("Error saving peer: %v", err)
 	}
-	extension.Completed <- true
-	delete(pm.pendingInvoices, payReq)
+	extension.OnCompleted <- true
+	delete(m.pendingInvoices, payReq)
 }
 
-func (pm *ParkingMeter) Run() {
+func (m *VPNMeter) Run() {
 	for {
-		sub, err := pm.lnClient.SubscribeInvoices(pm.ctx, &lnrpc.InvoiceSubscription{
+		sub, err := m.lnClient.SubscribeInvoices(m.ctx, &lnrpc.InvoiceSubscription{
 			AddIndex:    0,
 			SettleIndex: 0,
 		})
@@ -135,14 +135,14 @@ func (pm *ParkingMeter) Run() {
 				break
 			}
 			if invoice.State == lnrpc.Invoice_SETTLED {
-				pm.fulfillPaymentRequest(invoice.PaymentRequest)
+				m.fulfillPaymentRequest(invoice.PaymentRequest)
 			}
 		}
 	}
 }
 
-func (pm *ParkingMeter) HandleExtensionRequest(ctx *gin.Context) {
-	peer, ok := pm.loadPeerFromCookie(ctx)
+func (m *VPNMeter) HandleExtensionRequest(ctx *gin.Context) {
+	peer, ok := m.loadPeerFromCookie(ctx)
 	if !ok {
 		return
 	}
@@ -162,42 +162,42 @@ func (pm *ParkingMeter) HandleExtensionRequest(ctx *gin.Context) {
 		respondBadRequest(ctx, fmt.Errorf("cannot have more than %v of VPN time", MaxVpnTime))
 		return
 	}
-	sats := float64(duration) / float64(time.Hour) * pm.priceTracker.RetrieveSnapshot().Satoshi.Hour
+	sats := float64(duration) / float64(time.Hour) * m.priceTracker.RetrieveSnapshot().Satoshi.Hour
 	invoice := lnrpc.Invoice{
 		Value: int64(math.Ceil(sats)),
 		Memo:  fmt.Sprintf("Add %v to MeterVPN allowance", duration),
 	}
-	resp, err := pm.lnClient.AddInvoice(pm.ctx, &invoice)
+	resp, err := m.lnClient.AddInvoice(m.ctx, &invoice)
 	if err != nil {
 		respondServerError(ctx, err)
 		return
 	}
 	payReq := resp.PaymentRequest
-	pm.pendingInvoices[payReq] = pendingExtension{
-		AccountID: peer.AccountID,
-		Duration:  duration,
-		Completed: make(chan bool),
+	m.pendingInvoices[payReq] = pendingExtension{
+		AccountID:   peer.AccountID,
+		Duration:    duration,
+		OnCompleted: make(chan bool),
 	}
 	//// TODO: remove
 	//	//go func() {
 	//	//	log.Println("Fake fulfilling payment request")
 	//	//	<-time.NewTimer(time.Second * 5).C
-	//	//	pm.fulfillPaymentRequest(resp.PaymentRequest)
+	//	//	m.fulfillPaymentRequest(resp.PaymentRequest)
 	//	//}()
 	ctx.String(402, payReq)
 }
 
-func (pm *ParkingMeter) HandleExtensionCompletedRequest(ctx *gin.Context) {
+func (m *VPNMeter) HandleExtensionCompletedRequest(ctx *gin.Context) {
 	payReq := ctx.Query("payReq")
 	var pending pendingExtension
 	var ok bool
-	if pending, ok = pm.pendingInvoices[payReq]; !ok {
+	if pending, ok = m.pendingInvoices[payReq]; !ok {
 		ctx.Status(404)
 		return
 	}
 	timeout := time.NewTimer(time.Minute * 1)
 	select {
-	case <-pending.Completed:
+	case <-pending.OnCompleted:
 		ctx.JSON(200, gin.H{
 			"result": "completed",
 		})
@@ -208,7 +208,7 @@ func (pm *ParkingMeter) HandleExtensionCompletedRequest(ctx *gin.Context) {
 	}
 }
 
-func (pm *ParkingMeter) HandleGetPeerRequest(ctx *gin.Context) {
+func (m *VPNMeter) HandleGetPeerRequest(ctx *gin.Context) {
 	accountId, err := ctx.Cookie("accountId")
 	if err != nil {
 		respondServerError(ctx, err)
@@ -218,7 +218,7 @@ func (pm *ParkingMeter) HandleGetPeerRequest(ctx *gin.Context) {
 		respondBadRequest(ctx, errors.New("missing accountId"))
 		return
 	}
-	peer, err := pm.store.GetPeer(accountId)
+	peer, err := m.store.GetPeer(accountId)
 	if err == ErrPeerNotFound {
 		ctx.Status(404)
 		return
@@ -251,8 +251,8 @@ func PeerToJSON(peer *Peer) gin.H {
 	}
 }
 
-func (pm *ParkingMeter) HandleCreatePeerRequest(ctx *gin.Context) {
-	peer, err := pm.store.CreatePeer()
+func (m *VPNMeter) HandleCreatePeerRequest(ctx *gin.Context) {
+	peer, err := m.store.CreatePeer()
 	if err != nil {
 		respondServerError(ctx, err)
 		return
@@ -260,8 +260,8 @@ func (pm *ParkingMeter) HandleCreatePeerRequest(ctx *gin.Context) {
 	ctx.JSON(200, PeerToJSON(peer))
 }
 
-func (pm *ParkingMeter) HandleSetPubkeyRequest(ctx *gin.Context) {
-	peer, ok := pm.loadPeerFromCookie(ctx)
+func (m *VPNMeter) HandleSetPubkeyRequest(ctx *gin.Context) {
+	peer, ok := m.loadPeerFromCookie(ctx)
 	if !ok {
 		return
 	}
@@ -275,27 +275,27 @@ func (pm *ParkingMeter) HandleSetPubkeyRequest(ctx *gin.Context) {
 		return
 	}
 	peer.PublicKeyB64 = &config.PublicKey
-	if err := pm.store.SavePeer(peer); err != nil {
+	if err := m.store.SavePeer(peer); err != nil {
 		respondServerError(ctx, err)
 		return
 	}
 	ctx.JSON(200, nil)
 }
 
-func (pm *ParkingMeter) HandleIPRequest(ctx *gin.Context) {
-	peer, ok := pm.loadPeerFromCookie(ctx)
+func (m *VPNMeter) HandleIPRequest(ctx *gin.Context) {
+	peer, ok := m.loadPeerFromCookie(ctx)
 	if !ok {
 		return
 	}
 	if peer.IPv4 == nil {
-		ips, err := pm.store.GetNewIPs()
+		ips, err := m.store.GetNewIPs()
 		if err != nil {
 			respondServerError(ctx, err)
 			return
 		}
 		peer.IPv4 = &ips[0]
 		peer.IPv6 = &ips[1]
-		if err := pm.store.SavePeer(peer); err != nil {
+		if err := m.store.SavePeer(peer); err != nil {
 			respondServerError(ctx, err)
 			return
 		}
@@ -310,6 +310,6 @@ func (pm *ParkingMeter) HandleIPRequest(ctx *gin.Context) {
 	})
 }
 
-func (pm *ParkingMeter) HandlePriceRequest(ctx *gin.Context) {
-	ctx.JSON(200, pm.priceTracker.RetrieveSnapshot())
+func (m *VPNMeter) HandlePriceRequest(ctx *gin.Context) {
+	ctx.JSON(200, m.priceTracker.RetrieveSnapshot())
 }

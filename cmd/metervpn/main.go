@@ -48,7 +48,7 @@ func main() {
 
 	store := &daemon.SQLitePeerStore{DB: db}
 
-	parkingMeter, err := daemon.NewParkingMeter(store, daemon.LNDParams{
+	parkingMeter, err := daemon.NewVPNMeter(store, daemon.LNDParams{
 		MacaroonPath: "secret/admin.macaroon",
 		CertPath:     "secret/tls.cert",
 		Hostname:     "localhost:10009",
@@ -67,7 +67,7 @@ func main() {
 	startGinServer(parkingMeter, *port)
 }
 
-func startGinServer(booth *daemon.ParkingMeter, port int) {
+func startGinServer(booth *daemon.VPNMeter, port int) {
 	router := gin.Default()
 
 	if gin.Mode() == gin.ReleaseMode {
@@ -85,7 +85,7 @@ func startGinServer(booth *daemon.ParkingMeter, port int) {
 	log.Fatal(router.Run(addr))
 }
 
-func createApiRoutes(router *gin.Engine, meter *daemon.ParkingMeter) {
+func createApiRoutes(router *gin.Engine, meter *daemon.VPNMeter) {
 	router.GET("/price", meter.HandlePriceRequest)
 	router.POST("/peer", meter.HandleCreatePeerRequest)
 	router.GET("/peer", meter.HandleGetPeerRequest)
