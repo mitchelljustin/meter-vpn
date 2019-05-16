@@ -66,7 +66,7 @@ func main() {
 
 	app := createHTTPServer(vpnMeter)
 
-	addr := fmt.Sprintf(":%v", port)
+	addr := fmt.Sprintf(":%v", *port)
 	log.Printf("Server running at %v", addr)
 
 	log.Fatal(app.Run(addr))
