@@ -123,6 +123,7 @@ func (m *VPNMeter) fulfillPaymentRequest(payReq string) {
 }
 
 func (m *VPNMeter) Run() {
+	m.Report("Starting..")
 	for {
 		sub, err := m.lnClient.SubscribeInvoices(m.ctx, &lnrpc.InvoiceSubscription{
 			AddIndex:    0,
@@ -139,6 +140,7 @@ func (m *VPNMeter) Run() {
 				break
 			}
 			if invoice.State == lnrpc.Invoice_SETTLED {
+				m.Report("Got settled invoice: %v", invoice)
 				m.fulfillPaymentRequest(invoice.PaymentRequest)
 			}
 		}
