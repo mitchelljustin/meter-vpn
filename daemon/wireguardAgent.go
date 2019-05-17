@@ -65,7 +65,6 @@ func (a *WireGuardAgent) Tick() {
 		return
 	}
 	for _, peer := range peers {
-		a.Report("Checking peer %v (expiry %v)", peer.AccountID, peer.ExpiryDate)
 		key, err := KeyFromBase64(*peer.PublicKeyB64)
 		if err != nil {
 			a.Report("ERROR: %v", err)
